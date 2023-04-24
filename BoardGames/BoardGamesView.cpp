@@ -33,7 +33,6 @@ END_MESSAGE_MAP()
 CBoardGamesView::CBoardGamesView() noexcept
 {
 	// TODO: 여기에 생성 코드를 추가합니다.
-
 }
 
 CBoardGamesView::~CBoardGamesView()
@@ -50,7 +49,7 @@ BOOL CBoardGamesView::PreCreateWindow(CREATESTRUCT& cs)
 
 // CBoardGamesView 그리기
 
-void CBoardGamesView::OnDraw(CDC* /*pDC*/)
+void CBoardGamesView::OnDraw(CDC* pDC)
 {
 	CBoardGamesDoc* pDoc = GetDocument();
 	ASSERT_VALID(pDoc);
@@ -58,7 +57,18 @@ void CBoardGamesView::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: 여기에 원시 데이터에 대한 그리기 코드를 추가합니다.
-	Twelve.Game();
+	Twelve.SetGame(WinSize);
+	CRect* rect;
+	int gridBoardSize;
+	GameTuple = Twelve.Game(WinSize);
+
+	rect = std::get<0>(GameTuple);
+	gridBoardSize = std::get<1>(GameTuple);
+
+	for (int i = 0; i < gridBoardSize; i++)
+	{
+		pDC->Rectangle(rect[i]);
+	}
 }
 
 void CBoardGamesView::OnRButtonUp(UINT /* nFlags */, CPoint point)
@@ -104,6 +114,6 @@ void CBoardGamesView::OnSize(UINT nType, int cx, int cy)
 	CView::OnSize(nType, cx, cy);
 
 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
-	winSize.x = cx;
-	winSize.y = cy;
+	WinSize.x = cx;
+	WinSize.y = cy;
 }

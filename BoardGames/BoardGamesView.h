@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <tuple>
 #include "TwelveViewModel.h"
 
 class CBoardGamesView : public CView
@@ -42,8 +43,9 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 public:
-	CPoint winSize;	//윈도우 사이즈
+	CPoint WinSize;	//윈도우 사이즈
 	CTwelveViewModel Twelve;
+	std::tuple<CRect*, int> GameTuple;
 };
 
 #ifndef _DEBUG  // BoardGamesView.cpp의 디버그 버전
