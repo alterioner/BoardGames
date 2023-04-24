@@ -25,6 +25,7 @@ IMPLEMENT_DYNCREATE(CBoardGamesView, CView)
 BEGIN_MESSAGE_MAP(CBoardGamesView, CView)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
+	ON_WM_SIZE()
 END_MESSAGE_MAP()
 
 // CBoardGamesView 생성/소멸
@@ -95,3 +96,13 @@ CBoardGamesDoc* CBoardGamesView::GetDocument() const // 디버그되지 않은 �
 
 
 // CBoardGamesView 메시지 처리기
+
+
+void CBoardGamesView::OnSize(UINT nType, int cx, int cy)
+{
+	CView::OnSize(nType, cx, cy);
+
+	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
+	winSize.x = cx;
+	winSize.y = cy;
+}
