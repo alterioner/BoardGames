@@ -3,7 +3,7 @@
 //
 
 #pragma once
-
+#include "TwelveViewModel.h"
 
 class CBoardGamesView : public CView
 {
@@ -40,10 +40,10 @@ protected:
 	afx_msg void OnRButtonUp(UINT nFlags, CPoint point);
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	DECLARE_MESSAGE_MAP()
-public:
 	afx_msg void OnSize(UINT nType, int cx, int cy);
-
+public:
 	CPoint winSize;	//윈도우 사이즈
+	CTwelveViewModel Twelve;
 };
 
 #ifndef _DEBUG  // BoardGamesView.cpp의 디버그 버전

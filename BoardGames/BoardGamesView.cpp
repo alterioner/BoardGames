@@ -58,6 +58,7 @@ void CBoardGamesView::OnDraw(CDC* /*pDC*/)
 		return;
 
 	// TODO: 여기에 원시 데이터에 대한 그리기 코드를 추가합니다.
+	Twelve.Game();
 }
 
 void CBoardGamesView::OnRButtonUp(UINT /* nFlags */, CPoint point)
