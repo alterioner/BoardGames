@@ -58,16 +58,24 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 
 	// TODO: 여기에 원시 데이터에 대한 그리기 코드를 추가합니다.
 	Twelve.SetGame(WinSize);
-	CRect* rect;
-	int gridBoardSize;
+
 	GameTuple = Twelve.Game(WinSize);
 
-	rect = std::get<0>(GameTuple);
-	gridBoardSize = std::get<1>(GameTuple);
+	CRect* rect = std::get<0>(GameTuple);
+	int gridBoardRectSize = std::get<1>(GameTuple);
+	CGameTool::CLog* log = std::get<2>(GameTuple);
+	int logSize = std::get<3>(GameTuple);
 
-	for (int i = 0; i < gridBoardSize; i++)
+	for (int i = 0; i < gridBoardRectSize; i++)
 	{
 		pDC->Rectangle(rect[i]);
+	}
+
+	pDC->SetTextAlign(TA_CENTER);
+
+	for (int i = 0; i < logSize; i++)
+	{
+		pDC->TextOut(log[i].getPoint().x, log[i].getPoint().y, log[i].getText());
 	}
 }
 

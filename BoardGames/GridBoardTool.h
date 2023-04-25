@@ -4,5 +4,6 @@
 class CGridBoardTool : public CGameTool
 {
 public:
-	CRect** MakeGridBoardRect(CPoint WinSize, CPoint GridSize, CPoint GridBoardSize);	//격자판 만들기
+	CRect** MakeGridBoardRect(CPoint WinSize, CPoint GridBoardSize, CPoint GridSize);						//격자판 생성
+	CSpace** MakeGridBoardSpace(CPoint WinSize, CPoint GridBoardSize, CPoint GridSize, bool focusPoint);	//격자판 공간 생성
 };

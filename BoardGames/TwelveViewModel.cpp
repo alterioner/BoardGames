@@ -3,27 +3,41 @@
 
 void CTwelveViewModel::SetGame(CPoint WinSize)
 {
-	model.setGridSize(CPoint(100, 100));
-	model.setGridBoardSize(CPoint(3, 4));
 	model.MakeGridBoard(WinSize);
 }
 
-std::tuple<CRect*, int> CTwelveViewModel::Game(CPoint WinSize)
+std::tuple<CRect*, int, CGameTool::CLog*, int> CTwelveViewModel::Game(CPoint WinSize)
 {
-
 	CRect** rectBoard = model.getGridBoardRect();
 
-	int col = model.getGridSize().x;
-	int row = model.getGridSize().y;
+	int col = model.getGridBoardSize().x;
+	int row = model.getGridBoardSize().y;
 
-	CRect* rect = new CRect[col + row];
-	for (int c = 0; c < 3; c++)
+	//2차원 배열을 1차원 배열에 저장
+	CRect* rect = new CRect[col * row];
+	for (int c = 0; c < col; c++)
 	{
-		for (int r = 0; r < 4; r++)
+		for (int r = 0; r < row; r++)
 		{
-			rect[(c * 4) + r] = rectBoard[c][r];
+			rect[c * row + r] = rectBoard[c][r];
 		}
 	}
 
-	return std::make_tuple(rect, 12);
+	CGameTool::CSpace** spaceBoard = model.getGridBoard();
+	CGameTool::CLog* log;
+	CString text;
+
+	//격자판 로그 생성
+	log = new CGameTool::CLog[col * row];
+	for (int c = 0; c < col; c++)
+	{
+		for (int r = 0; r < row; r++)
+		{
+			log[c * row + r].setPoint(spaceBoard[c][r].getPoint());
+			text.Format(_T("%d, %d"), log[c * row + r].getPoint().x, log[c * row + r].getPoint().y);
+			log[c * row + r].setText(text);
+		}
+	}
+
+	return std::make_tuple(rect, 12, log, 12);
 }

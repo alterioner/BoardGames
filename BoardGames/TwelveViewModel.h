@@ -4,9 +4,9 @@
 
 class CTwelveViewModel
 {
-	CTwelveModel model;
+	CTwelveModel& model = CTwelveModel::getInstance();
 public:
 	void SetGame(CPoint WinSize);
-	std::tuple<CRect*, int> Game(CPoint WinSize);
+	std::tuple<CRect*, int, CGameTool::CLog*, int> Game(CPoint WinSize);
 };
 
