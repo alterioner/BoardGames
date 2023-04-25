@@ -45,7 +45,10 @@ protected:
 public:
 	CPoint WinSize;	//윈도우 사이즈
 	CTwelveViewModel Twelve;
-	std::tuple<CRect*, int> GameTuple;
+	std::tuple<CRect*, int, CGameTool::CLog*, int> GameTuple;
+
+
+	CRect PointToRect(CPoint point, int width, int height);
 };
 
 #ifndef _DEBUG  // BoardGamesView.cpp의 디버그 버전
