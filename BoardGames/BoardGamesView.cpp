@@ -59,22 +59,44 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 	// TODO: 여기에 원시 데이터에 대한 그리기 코드를 추가합니다.
 	Twelve.SetGame(WinSize);
 
-	GameTuple = Twelve.Game(WinSize);
+	DrawRectTuple = Twelve.DrawRectInfo();
+	CRect* rect = std::get<0>(DrawRectTuple);
+	int rectSize = std::get<1>(DrawRectTuple);
 
-	CRect* rect = std::get<0>(GameTuple);
-	int gridBoardRectSize = std::get<1>(GameTuple);
-	CGameTool::CLog* log = std::get<2>(GameTuple);
-	int logSize = std::get<3>(GameTuple);
-
-	for (int i = 0; i < gridBoardRectSize; i++)
+	for (int i = 0; i < rectSize; i++)
 	{
 		pDC->Rectangle(rect[i]);
 	}
 
-	pDC->SetTextAlign(TA_CENTER);
+	DrawImageTuple = Twelve.DrawImageInfo();
+	filePath = std::get<0>(DrawImageTuple);
+	imagePoint = std::get<1>(DrawImageTuple);
+	imageSize = std::get<2>(DrawImageTuple);
+
+	for (int i = 0; i < imageSize; i++)
+	{
+		DrawFromFile(pDC, filePath[i], imagePoint[i]);
+	}
+
+	DrawLogTuple = Twelve.DrawLogInfo();
+	CGameTool::CLog* log = std::get<0>(DrawLogTuple);
+	int logSize = std::get<1>(DrawLogTuple);
 
 	for (int i = 0; i < logSize; i++)
 	{
+		switch(log[i].getAlign())
+		{
+		case 1:
+			pDC->SetTextAlign(TA_LEFT);
+			break;
+		case 2:
+			pDC->SetTextAlign(TA_CENTER);
+			break;
+		case 3:
+			pDC->SetTextAlign(TA_RIGHT);
+			break;
+		}
+
 		pDC->TextOut(log[i].getPoint().x, log[i].getPoint().y, log[i].getText());
 	}
 }
@@ -124,4 +146,24 @@ void CBoardGamesView::OnSize(UINT nType, int cx, int cy)
 	// TODO: 여기에 메시지 처리기 코드를 추가합니다.
 	WinSize.x = cx;
 	WinSize.y = cy;
+}
+
+//중심점과 이미지 파일 경로를 받아 이미지를 그려줌 (CGameTool)
+//(CDC*, CPoint, PCWSTR filePath)
+bool CBoardGamesView::DrawFromFile(CDC* pDC, PCWSTR filePath, CPoint point)
+{
+	CImage image;
+
+	if (FAILED(image.Load(filePath)))
+	{
+		return FALSE;
+	}
+
+	int width = image.GetWidth();		//이미지의 넓이 저장
+	int height = image.GetHeight();		//이미지의 높이 저장
+
+	image.Draw(pDC->m_hDC, point.x - (width / 2), point.y - (height / 2));	//이미지가 입력된 위치의 가운데에 그려지게 조정
+	image.Detach();
+
+	return TRUE;
 }

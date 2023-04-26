@@ -1,13 +1,13 @@
 #include "pch.h"
 #include "GridBoardTool.h"
 
-CRect** CGridBoardTool::MakeGridBoardRect(CPoint WinSize, CPoint GridBoardSize, CPoint GridSize)
+CRect** CGridBoardTool::MakeGridRect(CPoint WinSize, CPoint GridSize, CPoint GridRectSize)
 {
-	int col = GridBoardSize.x;
-	int row = GridBoardSize.y;
-
 	int width = GridSize.x;
 	int heigtht = GridSize.y;
+
+	int col = GridRectSize.x;
+	int row = GridRectSize.y;
 
 	int totalwidth = col * width;		//그려질 판의 넓이
 	int totalheight = row * heigtht;	//그려질 판의 높이
@@ -28,13 +28,13 @@ CRect** CGridBoardTool::MakeGridBoardRect(CPoint WinSize, CPoint GridBoardSize, 
 	return rectBoard;
 }
 
-CGameTool::CSpace** CGridBoardTool::MakeGridBoardSpace(CPoint WinSize, CPoint GridBoardSize, CPoint GridSize, bool focusPoint)
+CGameTool::CSpace** CGridBoardTool::MakeGridSpace(CPoint WinSize, CPoint GridSize, CPoint GridSpaceSize, bool focusPoint)
 {
-	int col = GridBoardSize.x;
-	int row = GridBoardSize.y;
-
 	int width = GridSize.x;
 	int height = GridSize.y;
+
+	int col = GridSpaceSize.x;
+	int row = GridSpaceSize.y;
 
 	int totalWidth = col * width;
 	int totalHeight = row * height;

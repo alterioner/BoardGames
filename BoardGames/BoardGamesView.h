@@ -43,9 +43,23 @@ protected:
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize(UINT nType, int cx, int cy);
 public:
+	bool DrawFromFile(CDC* pDC, PCWSTR filePath, CPoint point);
+
 	CPoint WinSize;	//윈도우 사이즈
 	CTwelveViewModel Twelve;
-	std::tuple<CRect*, int, CGameTool::CLog*, int> GameTuple;
+
+	std::tuple<CRect*, int> DrawRectTuple;
+	CRect* rect;
+	int rectSize;
+
+	std::tuple<CString*, CPoint*, int> DrawImageTuple;
+	CString* filePath;
+	CPoint* imagePoint;
+	int imageSize;
+
+	std::tuple<CGameTool::CLog*, int> DrawLogTuple;
+	CGameTool::CLog* log;
+	int logSize;
 };
 
 #ifndef _DEBUG  // BoardGamesView.cpp의 디버그 버전
