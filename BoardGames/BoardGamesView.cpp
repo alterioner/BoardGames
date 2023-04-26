@@ -26,6 +26,7 @@ BEGIN_MESSAGE_MAP(CBoardGamesView, CView)
 	ON_WM_CONTEXTMENU()
 	ON_WM_RBUTTONUP()
 	ON_WM_SIZE()
+	ON_WM_LBUTTONUP()
 END_MESSAGE_MAP()
 
 // CBoardGamesView 생성/소멸
@@ -57,7 +58,17 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 		return;
 
 	// TODO: 여기에 원시 데이터에 대한 그리기 코드를 추가합니다.
-	Twelve.SetGame(WinSize);
+	if (start)
+	{
+		Twelve.ReadyGame(WinSize);
+		start = false;
+	}
+	if (reset)
+	{
+		Twelve.ResetGame();
+		reset = false;
+	}
+	Twelve.DoGame(clickPoint);
 
 	DrawRectTuple = Twelve.DrawRectInfo();
 	CRect* rect = std::get<0>(DrawRectTuple);
@@ -147,6 +158,16 @@ void CBoardGamesView::OnSize(UINT nType, int cx, int cy)
 	WinSize.x = cx;
 	WinSize.y = cy;
 }
+
+void CBoardGamesView::OnLButtonUp(UINT nFlags, CPoint point)
+{
+	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
+	clickPoint = point;
+
+	Invalidate();
+	CView::OnLButtonUp(nFlags, point);
+}
+
 
 //중심점과 이미지 파일 경로를 받아 이미지를 그려줌 (CGameTool)
 //(CDC*, CPoint, PCWSTR filePath)

@@ -42,10 +42,15 @@ protected:
 	afx_msg void OnContextMenu(CWnd* pWnd, CPoint point);
 	DECLARE_MESSAGE_MAP()
 	afx_msg void OnSize(UINT nType, int cx, int cy);
+	afx_msg void OnLButtonUp(UINT nFlags, CPoint point);
 public:
 	bool DrawFromFile(CDC* pDC, PCWSTR filePath, CPoint point);
 
 	CPoint WinSize;	//윈도우 사이즈
+	CPoint clickPoint;	//클릭한 위치
+
+	bool start = true;
+	bool reset = true;
 	CTwelveViewModel Twelve;
 
 	std::tuple<CRect*, int> DrawRectTuple;

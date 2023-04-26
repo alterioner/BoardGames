@@ -11,6 +11,11 @@
 #define	GENERAL 2
 #define	KING 3
 
+#define NORMAL 0
+#define MOVE 1
+#define CATCH 2
+#define LOCATE 3
+
 class CTwelveModel : public CGridBoardTool
 {
 	CTwelveModel() {}
@@ -20,6 +25,10 @@ class CTwelveModel : public CGridBoardTool
 	CPoint GridSpaceSize = CPoint(3, 4);	//격자판의 사용 공간 크기
 	CSpace** GridSpace;						//격자판의 사용 공간 정보
 	CItem** Item;							//아이템 정보
+
+	int currentStatus = NORMAL;	//현재 상태 기록
+	CPoint activeItemIndex = CPoint(NONE, NONE);		//활성화된 아이템 인덱스
+	CPoint activeGridSpaceIndex = CPoint(NONE, NONE);	//활성화된 격자판 인덱스
 public:
 	static CTwelveModel& getInstance() {
 		static CTwelveModel instance;
@@ -41,10 +50,21 @@ public:
 	CItem** getItem() { return Item; }
 	void setItem(CItem** Item) { this->Item = Item; }
 
+	int getCurrentStatus() { return currentStatus; }
+	CPoint getActiveItemIndex() { return activeItemIndex; }
+	CPoint getActiveGridSpaceIndex() { return activeGridSpaceIndex; }
+
 	void MakeGridBoard(CPoint WinSize);	//격자판 구현
 	void ResetGridBoard();				//격자판 정보 초기화
 
 	void MakeItem();	//아이템 구현
 	void ResetItem();	//아이템 정보 초기화
+
+	void Game(CPoint clickPoint);
+
+	CPoint ActiveGridSpaceIndex(CPoint clickPoint);	//격자판 활성화
+	CPoint ActiveItemIndex(CPoint clickPoint);		//아이템 활성화
+	void MoveSpaceInfo(CPoint originalIndex, CPoint nextIndex);	//격자판 정보 이동
+	void MoveItemInfo(CPoint itemIndex, CPoint moveTo);			//아이템 정보 이동
 };
 
