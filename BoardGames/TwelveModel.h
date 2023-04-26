@@ -19,16 +19,19 @@
 class CTwelveModel : public CGridBoardTool
 {
 	CTwelveModel() {}
-	CPoint GridSize = CPoint (100, 100);	//한 칸 크기
-	CPoint GridRectSize = CPoint(3, 4);		//격자판 크기
-	CRect** GridRect;						//격자판을 그릴 사각형
-	CPoint GridSpaceSize = CPoint(3, 4);	//격자판의 사용 공간 크기
-	CSpace** GridSpace;						//격자판의 사용 공간 정보
+	CPoint GridSize = CPoint (100, 100);	//격자칸 넓이
+	CPoint GridRectSize = CPoint(3, 4);		//격자칸 크기
+	CRect** GridRect;						//격자칸을 그릴 사각형
+	CPoint GridSpaceSize = CPoint(3, 4);	//격자공간 크기
+	CSpace** GridSpace;						//격자공간 정보
 	CItem** Item;							//아이템 정보
+	CSpace** CatchSpace;					//캐치공간 정보
 
-	int currentStatus = NORMAL;	//현재 상태 기록
-	CPoint activeItemIndex = CPoint(NONE, NONE);		//활성화된 아이템 인덱스
-	CPoint activeGridSpaceIndex = CPoint(NONE, NONE);	//활성화된 격자판 인덱스
+	bool Animating = false;
+	int CurrentStatus = NORMAL;	//현재 상태 기록
+	CPoint ActiveItemIndex = CPoint(NONE, NONE);		//활성화된 아이템 인덱스
+	CPoint ActiveGridSpaceIndex = CPoint(NONE, NONE);	//활성화된 격자공간 인덱스
+	CPoint CatchItemIndex = CPoint(NONE, NONE);			//잡힌 아이템 인덱스
 public:
 	static CTwelveModel& getInstance() {
 		static CTwelveModel instance;
@@ -50,19 +53,25 @@ public:
 	CItem** getItem() { return Item; }
 	void setItem(CItem** Item) { this->Item = Item; }
 
-	int getCurrentStatus() { return currentStatus; }
-	CPoint getActiveItemIndex() { return activeItemIndex; }
-	CPoint getActiveGridSpaceIndex() { return activeGridSpaceIndex; }
+	bool getAnimating() { return Animating; }
+	int getCurrentStatus() { return CurrentStatus; }
+	CPoint getActiveItemIndex() { return ActiveItemIndex; }
+	CPoint getActiveGridSpaceIndex() { return ActiveGridSpaceIndex; }
 
 	void MakeGridBoard(CPoint winSize);	//격자판 구현
-	void ResetGridBoard();				//격자판 정보 초기화
+	void MakeItem();					//아이템 구현
+	void MakeCatchSpace();				//캐치공간 구현
 
-	void MakeItem();	//아이템 구현
-	void ResetItem();	//아이템 정보 초기화
+	void ResetGridBoard();	//격자판 정보 초기화
+	void ResetItem();		//아이템 정보 초기화
+	void ResetCatchSpace();	//캐치공간 정보 초기화
+
+	CPoint temp;
 
 	void Game(CPoint clickPoint);
+	bool Animation();
 
-	CPoint PointToItemIndex(CPoint clickPoint);		//아이템 활성화
+	CPoint PointToItemIndex(CPoint clickPoint);		//좌표를 아이템 인덱스로 변환
 
 	bool CheckCanMove(CPoint itemIndex, CPoint gridSpaceIndex);	//이동 가능 여부 확인
 	bool MoveSon(CPoint itemIndex, CPoint gridSpaceIndex);
@@ -70,5 +79,7 @@ public:
 	bool MoveStraight(CPoint itemIndex, CPoint gridSpaceIndex);
 
 	void MoveItemInfo(CPoint itemIndex, CPoint moveTo);			//아이템 정보 이동
+	void MoveSpaceInfo(CPoint originalIndex, CPoint nextIndex);	//격자공간의 아이템 인덱스 정보 이동
+	void CatchItem(CPoint itemIndex);							//잡힌 아이템 정보 이동		
 };
 

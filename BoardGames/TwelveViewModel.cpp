@@ -3,28 +3,38 @@
 
 void CTwelveViewModel::ReadyGame(CPoint winSize)
 {
-	model.MakeGridBoard(winSize);
-	model.MakeItem();
+	Model.MakeGridBoard(winSize);
+	Model.MakeItem();
+	Model.MakeCatchSpace();
 }
 
 void CTwelveViewModel::ResetGame()
 {
-	model.ResetGridBoard();
-	model.ResetItem();
+	Model.ResetGridBoard();
+	Model.ResetItem();
+	Model.ResetCatchSpace();
 }
 
-void CTwelveViewModel::DoGame(CPoint clickPoint)
+bool CTwelveViewModel::DoGame(CPoint clickPoint)
 {
-	this->clickPoint = clickPoint;
-	model.Game(clickPoint);
+	this->ClickPoint = clickPoint;
+	if (!Model.getAnimating())
+	{
+		Model.Game(clickPoint);
+		return Model.getAnimating();
+	}
+	else
+	{
+		return Model.Animation();
+	}
 }
 
 std::tuple<CRect*, int> CTwelveViewModel::DrawRectInfo()
 {
-	int col = model.getGridRectSize().x;
-	int row = model.getGridRectSize().y;
+	int col = Model.getGridRectSize().x;
+	int row = Model.getGridRectSize().y;
 
-	CRect** rectBoard = model.getGridRect();
+	CRect** rectBoard = Model.getGridRect();
 
 	CRect* rect = new CRect[col * row];
 
@@ -41,7 +51,7 @@ std::tuple<CRect*, int> CTwelveViewModel::DrawRectInfo()
 
 std::tuple<CString*, CPoint*, int> CTwelveViewModel::DrawImageInfo()
 {
-	CGameTool::CItem** item = model.getItem();
+	CGameTool::CItem** item = Model.getItem();
 
 	CString* filePath = new CString[8];
 	CPoint* imagePoint = new CPoint[8];
@@ -66,12 +76,13 @@ std::tuple<CGameTool::CLog*, int> CTwelveViewModel::DrawLogInfo()
 	CString text;
 	CPoint point;
 
-	int col = model.getGridRectSize().x;
-	int row = model.getGridRectSize().y;
+	int col = Model.getGridRectSize().x;
+	int row = Model.getGridRectSize().y;
+	int extra = 6;
 
-	CGameTool::CSpace** spaceBoard = model.getGridSpace();
+	CGameTool::CSpace** spaceBoard = Model.getGridSpace();
 
-	CGameTool::CLog* log = new CGameTool::CLog[col * row + 4];
+	CGameTool::CLog* log = new CGameTool::CLog[col * row + extra];
 
 	//각 격자판에 위치한 아이템 인덱스 표시
 	for (int c = 0; c < col; c++)
@@ -89,37 +100,49 @@ std::tuple<CGameTool::CLog*, int> CTwelveViewModel::DrawLogInfo()
 		}
 	}
 
-	//격자판 크기 확인
-	log[12].setPoint(CPoint(10, 0));
-	text.Format(_T("Grid Size : CPoint(%d, %d)"), model.getGridRectSize().x, model.getGridRectSize().y);
+	//임시
+	log[12].setPoint(CPoint(1180, 0));
+	text.Format(_T("temp : CPoint(%d, %d)"), Model.temp.x, Model.temp.y);
 	log[12].setText(text);
-	log[12].setAlign(1);
+	log[12].setAlign(3);
 
-	//마우스가 클릭한 좌표 확인
-	log[13].setPoint(CPoint(10, 20));
-	text.Format(_T("Click Point : CPoint(%d, %d)"), clickPoint.x, clickPoint.y);
+	//격자판 크기 확인
+	log[13].setPoint(CPoint(10, 0));
+	text.Format(_T("Grid Size : CPoint(%d, %d)"), Model.getGridRectSize().x, Model.getGridRectSize().y);
 	log[13].setText(text);
 	log[13].setAlign(1);
 
+	//마우스가 클릭한 좌표 확인
+	log[14].setPoint(CPoint(10, 20));
+	text.Format(_T("Click Point : CPoint(%d, %d)"), ClickPoint.x, ClickPoint.y);
+	log[14].setText(text);
+	log[14].setAlign(1);
+
 	//활성화된 아이템 인덱스 확인
-	log[14].setPoint(CPoint(10, 40));
-	if ((point = model.getActiveItemIndex()) == CPoint(NONE, NONE)) log[14].setText(L"Active Item Index : NONE");
+	log[15].setPoint(CPoint(10, 40));
+	if ((point = Model.getActiveItemIndex()) == CPoint(NONE, NONE)) log[15].setText(L"Active Item Index : NONE");
 	else
 	{
 		text.Format(_T("Active Item Index : CPoint(%d, %d)"), point.x, point.y);
-		log[14].setText(text);
-	}
-	log[14].setAlign(1);
-
-	//활성화된 격자판의 인덱스 확인
-	log[15].setPoint(CPoint(10, 60));
-	if ((point = model.getActiveGridSpaceIndex()) == CPoint(NONE, NONE)) log[15].setText(L"Active Grid Index : NONE");
-	else
-	{
-		text.Format(_T("Active Grid Index : CPoint(%d, %d)"), point.x, point.y);
 		log[15].setText(text);
 	}
 	log[15].setAlign(1);
 
-	return std::make_tuple(log, col * row + 4);
+	//활성화된 격자판의 인덱스 확인
+	log[16].setPoint(CPoint(10, 60));
+	if ((point = Model.getActiveGridSpaceIndex()) == CPoint(NONE, NONE)) log[16].setText(L"Active Grid Index : NONE");
+	else
+	{
+		text.Format(_T("Active Grid Index : CPoint(%d, %d)"), point.x, point.y);
+		log[16].setText(text);
+	}
+	log[16].setAlign(1);
+
+	//currentStatus 확인
+	log[17].setPoint(CPoint(10, 80));
+	text.Format(_T("strCurrentStatus : %d"), Model.getCurrentStatus());
+	log[17].setText(text);
+	log[17].setAlign(1);
+
+	return std::make_tuple(log, col * row + extra);
 }

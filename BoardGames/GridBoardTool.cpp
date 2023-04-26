@@ -9,8 +9,8 @@ CRect** CGridBoardTool::MakeGridRect(CPoint winSize, CPoint gridSize, CPoint gri
 	int col = gridRectSize.x;
 	int row = gridRectSize.y;
 
-	int totalwidth = col * width;		//그려질 판의 넓이
-	int totalheight = row * heigtht;	//그려질 판의 높이
+	int totalwidth = col * width;		//그려질 칸의 넓이
+	int totalheight = row * heigtht;	//그려질 칸의 높이
 
 	int startX = (winSize.x / 2) - (totalwidth / 2);	//보드가 그려지기 시작할 위치(위쪽 픽셀)
 	int startY = (winSize.y / 2) - (totalheight / 2);	//보드가 그려지기 시작할 위치(왼쪽 픽셀)
@@ -43,7 +43,7 @@ CGameTool::CSpace** CGridBoardTool::MakeGridSpace(CPoint winSize, CPoint gridSiz
 	int startY = (winSize.y / 2) - (totalHeight / 2);
 
 	CSpace** spaceBoard;
-	if (focusPoint)
+	if (focusPoint)		//사용 장소(점, 칸)에 따라 다른 공간 생성
 	{
 		col++; row++;
 
@@ -75,8 +75,8 @@ CGameTool::CSpace** CGridBoardTool::MakeGridSpace(CPoint winSize, CPoint gridSiz
 	return spaceBoard;
 }
 
-//좌표를 받아 해당 좌표의 격자칸 인덱스 반환
-CPoint CGridBoardTool::PointToGridSpaceIndex(CSpace** gridSpace, CPoint gridSpaceSize, CPoint clickPoint)
+//좌표를 받아 해당 좌표의 격자공간 인덱스 반환
+CPoint CGridBoardTool::PointToGridSpaceIndex(CSpace** gridSpace, CPoint gridSpaceSize, CPoint point)
 {
 	int col = gridSpaceSize.x;
 	int row = gridSpaceSize.y;
@@ -85,17 +85,9 @@ CPoint CGridBoardTool::PointToGridSpaceIndex(CSpace** gridSpace, CPoint gridSpac
 	{
 		for (int r = 0; r < row; r++)
 		{
-			if (PtInRect(gridSpace[c][r].getRect(), clickPoint)) return CPoint(c, r);
+			if (PtInRect(gridSpace[c][r].getRect(), point)) return CPoint(c, r);
 		}
 	}
 
 	return CPoint(NONE, NONE);
-}
-
-//출발지 격자칸 인덱스와 도착지 격자칸 인덱스를 입력받아 격자칸 아이템 인덱스 정보 갱신
-void CGridBoardTool::MoveSpaceInfo(CSpace** gridSpace, CPoint originalIndex, CPoint nextIndex)
-{
-	CPoint itemIndex = gridSpace[originalIndex.x][originalIndex.y].getItemIndex();
-	gridSpace[nextIndex.x][nextIndex.y].setItemIndex(itemIndex);
-	gridSpace[originalIndex.x][originalIndex.y].setItemIndex(CPoint(NONE, NONE));
 }

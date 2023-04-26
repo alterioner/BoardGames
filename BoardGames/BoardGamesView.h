@@ -51,6 +51,7 @@ public:
 
 	bool start = true;
 	bool reset = true;
+	bool animating = false;
 	CTwelveViewModel Twelve;
 
 	std::tuple<CRect*, int> DrawRectTuple;

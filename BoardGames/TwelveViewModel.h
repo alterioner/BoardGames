@@ -6,12 +6,12 @@
 
 class CTwelveViewModel
 {
-	CTwelveModel& model = CTwelveModel::getInstance();
-	CPoint clickPoint;
+	CTwelveModel& Model = CTwelveModel::getInstance();
+	CPoint ClickPoint;
 public:
 	void ReadyGame(CPoint winSize);
 	void ResetGame();
-	void DoGame(CPoint clickPoint);
+	bool DoGame(CPoint clickPoint);
 
 	std::tuple<CRect*, int> DrawRectInfo();
 	std::tuple<CString*, CPoint*, int> DrawImageInfo();

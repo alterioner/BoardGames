@@ -1,13 +1,65 @@
 #include "pch.h"
 #include "TwelveModel.h"
 
-//격자판에 관련된 모든 정보 구현
+//격자판 구현
 void CTwelveModel::MakeGridBoard(CPoint winSize)
 {
-	GridRect = MakeGridRect(winSize, GridSize, GridRectSize);		//격자판 생성
-	GridSpace = MakeGridSpace(winSize, GridSize, GridSpaceSize, false);	//격자판의 사용 공간 생성
+	GridRect = MakeGridRect(winSize, GridSize, GridRectSize);			//격자칸 구현
+	GridSpace = MakeGridSpace(winSize, GridSize, GridSpaceSize, false);	//격자공간 구현
 }
 
+//사용할 아이템 구현
+void CTwelveModel::MakeItem()
+{
+	Item = new CItem * [4];
+
+	for (int i = 0; i < 4; i++)
+	{
+		Item[i] = new CItem[2];
+		Item[i][GREEN].setSide(L"Green");
+		Item[i][RED].setSide(L"Red");
+	}
+
+	for (int i = 0; i < 2; i++)
+	{
+		Item[SON][i].setJob(L"Son");
+		Item[MINISTER][i].setJob(L"Minister");
+		Item[GENERAL][i].setJob(L"General");
+		Item[KING][i].setJob(L"King");
+	}
+}
+
+//캐치공간 구현
+void CTwelveModel::MakeCatchSpace()
+{
+	CatchSpace = new CSpace * [2];
+
+	CatchSpace[GREEN] = new CSpace[6];
+	CatchSpace[GREEN][0].setPoint(CPoint(850, 600));
+	CatchSpace[GREEN][1].setPoint(CPoint(850, 500));
+	CatchSpace[GREEN][2].setPoint(CPoint(950, 600));
+	CatchSpace[GREEN][3].setPoint(CPoint(950, 500));
+	CatchSpace[GREEN][4].setPoint(CPoint(1050, 600));
+	CatchSpace[GREEN][5].setPoint(CPoint(1050, 500));
+
+	CatchSpace[RED] = new CSpace[6];
+	CatchSpace[RED][0].setPoint(CPoint(350, 100));
+	CatchSpace[RED][1].setPoint(CPoint(350, 200));
+	CatchSpace[RED][2].setPoint(CPoint(250, 100));
+	CatchSpace[RED][3].setPoint(CPoint(250, 200));
+	CatchSpace[RED][4].setPoint(CPoint(150, 100));
+	CatchSpace[RED][5].setPoint(CPoint(150, 200));
+
+	for (int i = 0; i < 2; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			CatchSpace[i][j].setRect(PointToRect(CatchSpace[i][j].getPoint(), CPoint(100, 100)));
+		}
+	}
+}
+
+//격자판 정보 초기화
 void CTwelveModel::ResetGridBoard()
 {
 	int col = GridSpaceSize.x;
@@ -31,27 +83,7 @@ void CTwelveModel::ResetGridBoard()
 	GridSpace[1][0].setItemIndex(CPoint(KING, RED));		//적색 王배치
 }
 
-void CTwelveModel::MakeItem()
-{
-	Item = new CItem * [4];
-
-	for (int i = 0; i < 4; i++)
-	{
-		Item[i] = new CItem[2];
-		Item[i][GREEN].setSide(L"Green");
-		Item[i][RED].setSide(L"Red");
-	}
-
-	for (int i = 0; i < 2; i++)
-	{
-		Item[SON][i].setJob(L"Son");
-		Item[MINISTER][i].setJob(L"Minister");
-		Item[GENERAL][i].setJob(L"General");
-		Item[KING][i].setJob(L"King");
-	}
-}
-
-//아이템의 위치를 초기화한다 (CTwelveModel)
+//아이템 정보 초기화
 void CTwelveModel::ResetItem()
 {
 	//아이템 위치 초기화
@@ -75,33 +107,78 @@ void CTwelveModel::ResetItem()
 	}
 }
 
+//캐치공간 정보 초기화
+void CTwelveModel::ResetCatchSpace()
+{
+	for (int i = 0; i < 2; i++)
+	{
+		for (int j = 0; j < 6; j++)
+		{
+			CatchSpace[i][j].setItemIndex(CPoint(NONE, NONE));
+		}
+	}
+}
+
 void CTwelveModel::Game(CPoint clickPoint)
 {
-	switch (currentStatus)
+	switch (CurrentStatus)
 	{
 	case NORMAL:
-		if ((activeItemIndex = PointToItemIndex(clickPoint)) != CPoint(NONE, NONE))
+		if ((ActiveItemIndex = PointToItemIndex(clickPoint)) != CPoint(NONE, NONE))		//아이템 클릭 검사와 동시에 클릭한 아이템 인덱스 저장 및 활성화
 		{
-			if (Item[activeItemIndex.x][activeItemIndex.y].getPlace() == L"Catch") currentStatus = LOCATE;
-			else currentStatus = MOVE;
+			if (Item[ActiveItemIndex.x][ActiveItemIndex.y].getPlace() == L"Catch") CurrentStatus = LOCATE;
+			else CurrentStatus = MOVE;
 		}
 		break;
 	case MOVE:
-		if ((activeGridSpaceIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, clickPoint)) != CPoint(NONE, NONE))
+		if ((ActiveGridSpaceIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, clickPoint)) != CPoint(NONE, NONE))		//격자공간 클릭 검사와 동시에 클릭한 격자공간 인덱스 저장 및 활성화
 		{
-			if (CheckCanMove(activeItemIndex, activeGridSpaceIndex))
+			if (CheckCanMove(ActiveItemIndex, ActiveGridSpaceIndex))	//활성화된 아이템이 활성화된 격자공간으로 이동 가능한지 검사
 			{
-				CPoint gridItemIndex = GridSpace[activeGridSpaceIndex.x][activeGridSpaceIndex.y].getItemIndex();
-				CPoint activeSpacePoint = GridSpace[activeGridSpaceIndex.x][activeGridSpaceIndex.y].getPoint();
+				int moveNcatch;			//0:이동불가, 1:이동가능 + 상대말 잡음, 2:이동가능
 
-				MoveSpaceInfo(GridSpace, PointToGridSpaceIndex(GridSpace, GridSpaceSize, Item[activeItemIndex.x][activeItemIndex.y].getPoint()), activeGridSpaceIndex);
-				MoveItemInfo(activeItemIndex, activeSpacePoint);
+				CPoint activeGridSpacesItemIndex = GridSpace[ActiveGridSpaceIndex.x][ActiveGridSpaceIndex.y].getItemIndex();
+
+				if (activeGridSpacesItemIndex == CPoint(NONE, NONE)) moveNcatch = 2;																						//목적지에 아이템 없음
+				else if (Item[ActiveItemIndex.x][ActiveItemIndex.y].getSide() != Item[activeGridSpacesItemIndex.x][activeGridSpacesItemIndex.y].getSide()) moveNcatch = 1;	//목적지의 아이템이 적군
+				else moveNcatch = 0;																																		//목적지의 아이템이 아군
+
+				switch (moveNcatch)
+				{
+				case 1:
+					CatchItemIndex = activeGridSpacesItemIndex;
+					CurrentStatus = CATCH;
+				case 2:
+					MoveSpaceInfo(PointToGridSpaceIndex(GridSpace, GridSpaceSize, Item[ActiveItemIndex.x][ActiveItemIndex.y].getPoint()), ActiveGridSpaceIndex);
+					CPoint activeSpacePoint = GridSpace[ActiveGridSpaceIndex.x][ActiveGridSpaceIndex.y].getPoint();
+					MoveItemInfo(ActiveItemIndex, activeSpacePoint);
+				}
+				Animating = true;
 			}
 		}
 
-		activeItemIndex = CPoint(NONE, NONE);
-		currentStatus = NORMAL;
+		ActiveItemIndex = CPoint(NONE, NONE);
+		if (CurrentStatus == MOVE) CurrentStatus = NORMAL;
 		break;
+	case CATCH:
+		CatchItem(CatchItemIndex);
+		CurrentStatus = NORMAL;
+		Animating = true;
+		break;
+	}
+}
+
+bool CTwelveModel::Animation()
+{
+	if (CurrentStatus == CATCH)
+	{
+		Animating = false;
+		return true;
+	}
+	else
+	{
+		Animating = false;
+		return false;
 	}
 }
 
@@ -117,13 +194,6 @@ CPoint CTwelveModel::PointToItemIndex(CPoint clickPoint)
 	}
 
 	return CPoint(NONE, NONE);
-}
-
-//이동할 아이템 인덱스와 이동할 포인트를 입력받아 아이템 정보를 갱신
-void CTwelveModel::MoveItemInfo(CPoint itemIndex, CPoint moveTo)
-{
-	Item[itemIndex.x][itemIndex.y].setPoint(moveTo);
-	Item[itemIndex.x][itemIndex.y].setRect(PointToRect(moveTo, CPoint(90, 90)));
 }
 
 //각 말의 이동하려는 방향과 이동할 수 있는 방향이 일치하는지 검사
@@ -185,4 +255,43 @@ bool CTwelveModel::MoveStraight(CPoint itemIndex, CPoint gridSpaceIndex)
 	}
 
 	return false;
+}
+
+//출발지 격자공간 인덱스와 도착지 격자공간 인덱스를 입력받아 각 격자공간의 아이템 인덱스 정보 갱신
+void CTwelveModel::MoveSpaceInfo(CPoint originalIndex, CPoint nextIndex)
+{
+	CPoint itemIndex = GridSpace[originalIndex.x][originalIndex.y].getItemIndex();
+	GridSpace[nextIndex.x][nextIndex.y].setItemIndex(itemIndex);
+	GridSpace[originalIndex.x][originalIndex.y].setItemIndex(CPoint(NONE, NONE));
+}
+
+//이동할 아이템 인덱스와 이동할 포인트를 입력받아 아이템 정보를 갱신
+void CTwelveModel::MoveItemInfo(CPoint itemIndex, CPoint moveTo)
+{
+	Item[itemIndex.x][itemIndex.y].setPoint(moveTo);
+	Item[itemIndex.x][itemIndex.y].setRect(PointToRect(moveTo, CPoint(90, 90)));
+}
+
+
+//잡힌 말의 직업에 따라 캐치 공간에 정렬함
+void CTwelveModel::CatchItem(CPoint itemIndex)
+{
+	int side;
+	if (Item[itemIndex.x][itemIndex.y].getSide() == L"Green") {
+		Item[itemIndex.x][itemIndex.y].setSide(L"Red");
+		side = RED;
+	}
+	else
+	{
+		Item[itemIndex.x][itemIndex.y].setSide(L"Green");
+		side = GREEN;
+	}
+
+	int index;
+	if (CatchSpace[side][itemIndex.x * 2].getItemIndex() == CPoint(NONE, NONE)) index = itemIndex.x * 2;
+	else index = (itemIndex.x * 2) + 1;
+
+	MoveItemInfo(itemIndex, CatchSpace[side][index].getPoint());
+	CatchSpace[side][index].setItemIndex(itemIndex);
+	Item[itemIndex.x][itemIndex.y].setPlace(L"Catch");
 }

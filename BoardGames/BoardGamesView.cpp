@@ -68,7 +68,7 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 		Twelve.ResetGame();
 		reset = false;
 	}
-	Twelve.DoGame(clickPoint);
+	animating = Twelve.DoGame(clickPoint);
 
 	DrawRectTuple = Twelve.DrawRectInfo();
 	CRect* rect = std::get<0>(DrawRectTuple);
@@ -110,6 +110,8 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 
 		pDC->TextOut(log[i].getPoint().x, log[i].getPoint().y, log[i].getText());
 	}
+
+	if (animating) Invalidate();
 }
 
 void CBoardGamesView::OnRButtonUp(UINT /* nFlags */, CPoint point)
