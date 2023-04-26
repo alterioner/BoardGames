@@ -54,7 +54,7 @@ public:
 	CPoint getActiveItemIndex() { return activeItemIndex; }
 	CPoint getActiveGridSpaceIndex() { return activeGridSpaceIndex; }
 
-	void MakeGridBoard(CPoint WinSize);	//격자판 구현
+	void MakeGridBoard(CPoint winSize);	//격자판 구현
 	void ResetGridBoard();				//격자판 정보 초기화
 
 	void MakeItem();	//아이템 구현
@@ -62,9 +62,13 @@ public:
 
 	void Game(CPoint clickPoint);
 
-	CPoint ActiveGridSpaceIndex(CPoint clickPoint);	//격자판 활성화
-	CPoint ActiveItemIndex(CPoint clickPoint);		//아이템 활성화
-	void MoveSpaceInfo(CPoint originalIndex, CPoint nextIndex);	//격자판 정보 이동
+	CPoint PointToItemIndex(CPoint clickPoint);		//아이템 활성화
+
+	bool CheckCanMove(CPoint itemIndex, CPoint gridSpaceIndex);	//이동 가능 여부 확인
+	bool MoveSon(CPoint itemIndex, CPoint gridSpaceIndex);
+	bool MoveDiagonal(CPoint itemIndex, CPoint gridSpaceIndex);
+	bool MoveStraight(CPoint itemIndex, CPoint gridSpaceIndex);
+
 	void MoveItemInfo(CPoint itemIndex, CPoint moveTo);			//아이템 정보 이동
 };
 

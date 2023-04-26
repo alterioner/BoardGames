@@ -1,9 +1,9 @@
 #include "pch.h"
 #include "TwelveViewModel.h"
 
-void CTwelveViewModel::ReadyGame(CPoint WinSize)
+void CTwelveViewModel::ReadyGame(CPoint winSize)
 {
-	model.MakeGridBoard(WinSize);
+	model.MakeGridBoard(winSize);
 	model.MakeItem();
 }
 

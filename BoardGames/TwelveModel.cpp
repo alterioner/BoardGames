@@ -2,10 +2,10 @@
 #include "TwelveModel.h"
 
 //격자판에 관련된 모든 정보 구현
-void CTwelveModel::MakeGridBoard(CPoint WinSize)
+void CTwelveModel::MakeGridBoard(CPoint winSize)
 {
-	GridRect = MakeGridRect(WinSize, GridSize, GridRectSize);		//격자판 생성
-	GridSpace = MakeGridSpace(WinSize, GridSize, GridSpaceSize, false);	//격자판의 사용 공간 생성
+	GridRect = MakeGridRect(winSize, GridSize, GridRectSize);		//격자판 생성
+	GridSpace = MakeGridSpace(winSize, GridSize, GridSpaceSize, false);	//격자판의 사용 공간 생성
 }
 
 void CTwelveModel::ResetGridBoard()
@@ -21,14 +21,14 @@ void CTwelveModel::ResetGridBoard()
 		}
 	}
 
-	getGridSpace()[1][2].setItemIndex(CPoint(SON, GREEN));		//녹색 子배치
-	getGridSpace()[1][1].setItemIndex(CPoint(SON, RED));		//적색 子배치
-	getGridSpace()[0][3].setItemIndex(CPoint(MINISTER, GREEN));	//녹색 相배치
-	getGridSpace()[2][0].setItemIndex(CPoint(MINISTER, RED));	//적색 相배치
-	getGridSpace()[2][3].setItemIndex(CPoint(GENERAL, GREEN));	//녹색 將배치
-	getGridSpace()[0][0].setItemIndex(CPoint(GENERAL, RED));	//적색 將배치
-	getGridSpace()[1][3].setItemIndex(CPoint(KING, GREEN));		//녹색 王배치
-	getGridSpace()[1][0].setItemIndex(CPoint(KING, RED));		//적색 王배치
+	GridSpace[1][2].setItemIndex(CPoint(SON, GREEN));		//녹색 子배치
+	GridSpace[1][1].setItemIndex(CPoint(SON, RED));			//적색 子배치
+	GridSpace[0][3].setItemIndex(CPoint(MINISTER, GREEN));	//녹색 相배치
+	GridSpace[2][0].setItemIndex(CPoint(MINISTER, RED));	//적색 相배치
+	GridSpace[2][3].setItemIndex(CPoint(GENERAL, GREEN));	//녹색 將배치
+	GridSpace[0][0].setItemIndex(CPoint(GENERAL, RED));		//적색 將배치
+	GridSpace[1][3].setItemIndex(CPoint(KING, GREEN));		//녹색 王배치
+	GridSpace[1][0].setItemIndex(CPoint(KING, RED));		//적색 王배치
 }
 
 void CTwelveModel::MakeItem()
@@ -80,20 +80,23 @@ void CTwelveModel::Game(CPoint clickPoint)
 	switch (currentStatus)
 	{
 	case NORMAL:
-		if ((activeItemIndex = ActiveItemIndex(clickPoint)) != CPoint(NONE, NONE))
+		if ((activeItemIndex = PointToItemIndex(clickPoint)) != CPoint(NONE, NONE))
 		{
 			if (Item[activeItemIndex.x][activeItemIndex.y].getPlace() == L"Catch") currentStatus = LOCATE;
 			else currentStatus = MOVE;
 		}
 		break;
 	case MOVE:
-		if ((activeGridSpaceIndex = ActiveGridSpaceIndex(clickPoint)) != CPoint(NONE, NONE))
+		if ((activeGridSpaceIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, clickPoint)) != CPoint(NONE, NONE))
 		{
-			CPoint gridItemIndex = GridSpace[activeGridSpaceIndex.x][activeGridSpaceIndex.y].getItemIndex();
-			CPoint activeSpacePoint = GridSpace[activeGridSpaceIndex.x][activeGridSpaceIndex.y].getPoint();
+			if (CheckCanMove(activeItemIndex, activeGridSpaceIndex))
+			{
+				CPoint gridItemIndex = GridSpace[activeGridSpaceIndex.x][activeGridSpaceIndex.y].getItemIndex();
+				CPoint activeSpacePoint = GridSpace[activeGridSpaceIndex.x][activeGridSpaceIndex.y].getPoint();
 
-			MoveSpaceInfo(ActiveGridSpaceIndex(Item[activeItemIndex.x][activeItemIndex.y].getPoint()), activeGridSpaceIndex);
-			MoveItemInfo(activeItemIndex, activeSpacePoint);
+				MoveSpaceInfo(GridSpace, PointToGridSpaceIndex(GridSpace, GridSpaceSize, Item[activeItemIndex.x][activeItemIndex.y].getPoint()), activeGridSpaceIndex);
+				MoveItemInfo(activeItemIndex, activeSpacePoint);
+			}
 		}
 
 		activeItemIndex = CPoint(NONE, NONE);
@@ -102,25 +105,8 @@ void CTwelveModel::Game(CPoint clickPoint)
 	}
 }
 
-//좌표를 받아 해당 좌표의 격자칸 인덱스 반환
-CPoint CTwelveModel::ActiveGridSpaceIndex(CPoint clickPoint)
-{
-	int col = GridSpaceSize.x;
-	int row = GridSpaceSize.y;
-
-	for (int c = 0; c < col; c++)
-	{
-		for (int r = 0; r < row; r++)
-		{
-			if (PtInRect(GridSpace[c][r].getRect(), clickPoint)) return CPoint(c, r);
-		}
-	}
-
-	return CPoint(NONE, NONE);
-}
-
 //클릭 좌표를 받아 해당 좌표의 아이템 인덱스 반환
-CPoint CTwelveModel::ActiveItemIndex(CPoint clickPoint)
+CPoint CTwelveModel::PointToItemIndex(CPoint clickPoint)
 {
 	for (int job = 0; job < 4; job++)
 	{
@@ -133,18 +119,70 @@ CPoint CTwelveModel::ActiveItemIndex(CPoint clickPoint)
 	return CPoint(NONE, NONE);
 }
 
-//출발지 격자칸 인덱스와 도착지 격자칸 인덱스를 입력받아 격자칸 정보를 갱신
-void CTwelveModel::MoveSpaceInfo(CPoint originalIndex, CPoint nextIndex)
-{
-	CPoint itemIndex = GridSpace[originalIndex.x][originalIndex.y].getItemIndex();
-	GridSpace[nextIndex.x][nextIndex.y].setItemIndex(itemIndex);
-	GridSpace[originalIndex.x][originalIndex.y].setItemIndex(CPoint(NONE, NONE));
-}
-
-
 //이동할 아이템 인덱스와 이동할 포인트를 입력받아 아이템 정보를 갱신
 void CTwelveModel::MoveItemInfo(CPoint itemIndex, CPoint moveTo)
 {
 	Item[itemIndex.x][itemIndex.y].setPoint(moveTo);
 	Item[itemIndex.x][itemIndex.y].setRect(PointToRect(moveTo, CPoint(90, 90)));
+}
+
+//각 말의 이동하려는 방향과 이동할 수 있는 방향이 일치하는지 검사
+bool CTwelveModel::CheckCanMove(CPoint itemIndex, CPoint gridSpaceIndex)
+{
+	CString job = Item[itemIndex.x][itemIndex.y].getJob();
+	if (job == L"Son") return MoveSon(itemIndex, gridSpaceIndex);
+	else if (job == L"Minister") return MoveDiagonal(itemIndex, gridSpaceIndex);
+	else if (job == L"General") return MoveStraight(itemIndex, gridSpaceIndex);
+	else if (job == L"King") return (MoveDiagonal(itemIndex, gridSpaceIndex) || MoveStraight(itemIndex, gridSpaceIndex));
+
+	return false;
+}
+
+//子 아이템 이동
+bool CTwelveModel::MoveSon(CPoint itemIndex, CPoint gridSpaceIndex)
+{
+	CPoint itemsGridIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, Item[itemIndex.x][itemIndex.y].getPoint());
+
+	if (Item[itemIndex.x][itemIndex.y].getSide() == L"Green") itemsGridIndex.y--;
+	else itemsGridIndex.y++;
+
+	if (itemsGridIndex == gridSpaceIndex) return true;
+	else return false;
+}
+
+bool CTwelveModel::MoveDiagonal(CPoint itemIndex, CPoint gridSpaceIndex)
+{
+	CPoint itemsGridIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, Item[itemIndex.x][itemIndex.y].getPoint());
+
+	if (itemsGridIndex.x - 1 == gridSpaceIndex.x || itemsGridIndex.x + 1 == gridSpaceIndex.x)
+	{
+		if (itemsGridIndex.y - 1 == gridSpaceIndex.y || itemsGridIndex.y + 1 == gridSpaceIndex.y)
+		{
+			return true;
+		}
+	}
+
+	return false;
+}
+
+bool CTwelveModel::MoveStraight(CPoint itemIndex, CPoint gridSpaceIndex)
+{
+	CPoint itemsGridIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, Item[itemIndex.x][itemIndex.y].getPoint());
+
+	if (itemsGridIndex.x == gridSpaceIndex.x)
+	{
+		if (itemsGridIndex.y - 1 == gridSpaceIndex.y || itemsGridIndex.y + 1 == gridSpaceIndex.y)
+		{
+			return true;
+		}
+	}
+	else if (itemsGridIndex.y == gridSpaceIndex.y)
+	{
+		if (itemsGridIndex.x - 1 == gridSpaceIndex.x || itemsGridIndex.x + 1 == gridSpaceIndex.x)
+		{
+			return true;
+		}
+	}
+
+	return false;
 }

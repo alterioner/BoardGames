@@ -9,7 +9,7 @@ class CTwelveViewModel
 	CTwelveModel& model = CTwelveModel::getInstance();
 	CPoint clickPoint;
 public:
-	void ReadyGame(CPoint WinSize);
+	void ReadyGame(CPoint winSize);
 	void ResetGame();
 	void DoGame(CPoint clickPoint);
 
