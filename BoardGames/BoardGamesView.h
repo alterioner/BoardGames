@@ -70,10 +70,9 @@ public:
 	
 	int imgFrame;
 
-	CImage image;
-	CImage image2;
-	void Draw(CDC* pDC, CString filename);
-	void Draw(CDC* pDC, CImage image, CPoint point);
+	CImage** image;
+
+	//void Draw(CDC* pDC, CString filename);
 	CString str;
 };
 

@@ -84,24 +84,13 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 	filePath = std::get<0>(DrawImageTuple);
 	imagePoint = std::get<1>(DrawImageTuple);
 	imageSize = std::get<2>(DrawImageTuple);
-
-	//Draw(pDC, Model.getItem()[3][0].findSprite(L"GKing"), CPoint(300, 300));
-	
-	image.Load(L"res/Twelve/GKing.png");
-	//Model.getItem()[3][0].setImage(image);
-
-	int width = image.GetWidth();		//이미지의 넓이 저장
-	int height = image.GetHeight();		//이미지의 높이 저장
-
-	image.Draw(pDC->m_hDC, 300 - (width / 2), 300 - (height / 2));	//이미지가 입력된 위치의 가운데에 그려지게 조정
-	image.Detach();
-	//Draw(pDC, image2, CPoint(300, 300));
 	
 
 	for (int i = 0; i < imageSize; i++)
 	{
 		DrawFromFile(pDC, filePath[i], imagePoint[i]);
 	}
+	DrawFromFile(pDC, filePath[4], imagePoint[4]);
 
 	DrawLogTuple = Twelve.DrawLogInfo();
 	CGameTool::CLog* log = std::get<0>(DrawLogTuple);
@@ -124,12 +113,10 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 
 		pDC->TextOut(log[i].getPoint().x, log[i].getPoint().y, log[i].getText());
 	}
-	  
-	pDC->TextOut(10, 150, str);
 
-	if (animating) {
-		CPoint index = Model.getActiveItemIndex();
-		Draw(pDC, filePath[index.x * 2 + index.y]);
+	if (animating)
+	{
+		Sleep(100);
 		Invalidate();
 	}
 }
@@ -210,15 +197,7 @@ bool CBoardGamesView::DrawFromFile(CDC* pDC, PCWSTR filePath, CPoint point)
 	return TRUE;
 }
 
-void CBoardGamesView::Draw(CDC* pDC, CImage image, CPoint point)
-{
-	int width = image.GetWidth();		//이미지의 넓이 저장
-	int height = image.GetHeight();		//이미지의 높이 저장
-
-	image.Draw(pDC->m_hDC, point.x - (width / 2), point.y - (height / 2));	//이미지가 입력된 위치의 가운데에 그려지게 조정
-	image.Detach();
-}
-
+/*
 void CBoardGamesView::Draw(CDC* pDC, CString filename)
 {
 
@@ -226,16 +205,6 @@ void CBoardGamesView::Draw(CDC* pDC, CString filename)
 	CPoint depart = Model.getOriginalPoint();
 	CPoint arrive = Model.getNextPoint();
 	CPoint move = arrive - depart;
-
-	//이미지 캐싱 해놔라
-	//이미지 캐싱 해놔라
-	//이미지 캐싱 해놔라
-	//이미지 캐싱 해놔라
-	//이미지 캐싱 해놔라
-
-	//이미지 캐싱 해놔라
-	//이미지 캐싱 해놔라
-	//이미지 캐싱 해놔라
 
 	if (imgFrame == 0)										//0프레임
 	{
@@ -263,3 +232,4 @@ void CBoardGamesView::Draw(CDC* pDC, CString filename)
 	DrawFromFile(pDC, filename, movingPoint);
 	str.Format(_T("%d, %d"), imgFrame, movingPoint.y);
 }
+*/

@@ -1,6 +1,4 @@
 #pragma once
-#include <map>
-#include <list>
 
 class CGameTool
 {
@@ -21,34 +19,24 @@ public:
 
 	class CItem
 	{
-		std::map<CString, CImage> Sprite;	//아이템의 이미지 스프라이트
-		CImage image;
+		CPoint point;	//아이템의 중심점
+		CRect rect;		//아이템의 좌표
 
 		CString side;	//아이템의 소속
 		CString job;	//아이템의 직업
-
-		CPoint point;	//아이템의 중심점
-		CRect rect;		//아이템의 좌표
-		CString place;	//아이템의 위치한 장소
+		CString status;	//아이템의 상태
 	public:
-		void insertSprite(CString key, CImage image) { Sprite[key] = image; }
-		void removeSprite(CString key) { Sprite.erase(key); }
-		CImage findSprite(CString key) { return Sprite[key]; }
-
-		void setImage(CImage image) { this->image = image; }
-		CImage getImage() { return image; }
+		CPoint getPoint() { return point; }
+		void setPoint(CPoint point) { this->point = point; }
+		CRect getRect() { return rect; }
+		void setRect(CRect rect) { this->rect = rect; }
 
 		CString getSide() { return side; }
 		void setSide(CString side) { this->side = side; }
 		CString getJob() { return job; }
 		void setJob(CString job) { this->job = job; }
-
-		CPoint getPoint() { return point; }
-		void setPoint(CPoint point) { this->point = point; }
-		CRect getRect() { return rect; }
-		void setRect(CRect rect) { this->rect = rect; }
-		CString getPlace() { return place; }
-		void setPlace(CString place) { this->place = place; }
+		CString getStatus() { return status; }
+		void setStatus(CString status) { this->status = status; }
 	};
 
 	class CLog
