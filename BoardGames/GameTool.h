@@ -1,4 +1,7 @@
 #pragma once
+#include <map>
+#include <list>
+
 class CGameTool
 {
 public:
@@ -18,6 +21,9 @@ public:
 
 	class CItem
 	{
+		std::map<CString, CImage> Sprite;	//아이템의 이미지 스프라이트
+		CImage image;
+
 		CString side;	//아이템의 소속
 		CString job;	//아이템의 직업
 
@@ -25,6 +31,13 @@ public:
 		CRect rect;		//아이템의 좌표
 		CString place;	//아이템의 위치한 장소
 	public:
+		void insertSprite(CString key, CImage image) { Sprite[key] = image; }
+		void removeSprite(CString key) { Sprite.erase(key); }
+		CImage findSprite(CString key) { return Sprite[key]; }
+
+		void setImage(CImage image) { this->image = image; }
+		CImage getImage() { return image; }
+
 		CString getSide() { return side; }
 		void setSide(CString side) { this->side = side; }
 		CString getJob() { return job; }
@@ -53,5 +66,5 @@ public:
 	};
 
 	CRect PointToRect(CPoint point, CPoint size);
+	CImage SaveImage(PCWSTR filePath);
 };
-

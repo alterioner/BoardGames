@@ -53,6 +53,7 @@ public:
 	bool reset = true;
 	bool animating = false;
 	CTwelveViewModel Twelve;
+	CTwelveModel& Model = CTwelveModel::getInstance();
 
 	std::tuple<CRect*, int> DrawRectTuple;
 	CRect* rect;
@@ -66,6 +67,14 @@ public:
 	std::tuple<CGameTool::CLog*, int> DrawLogTuple;
 	CGameTool::CLog* log;
 	int logSize;
+	
+	int imgFrame;
+
+	CImage image;
+	CImage image2;
+	void Draw(CDC* pDC, CString filename);
+	void Draw(CDC* pDC, CImage image, CPoint point);
+	CString str;
 };
 
 #ifndef _DEBUG  // BoardGamesView.cpp의 디버그 버전

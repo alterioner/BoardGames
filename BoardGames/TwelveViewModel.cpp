@@ -18,6 +18,7 @@ void CTwelveViewModel::ResetGame()
 bool CTwelveViewModel::DoGame(CPoint clickPoint)
 {
 	this->ClickPoint = clickPoint;
+	MoveItemIndex = CPoint(NONE, NONE);
 	if (!Model.getAnimating())
 	{
 		Model.Game(clickPoint);
@@ -61,10 +62,17 @@ std::tuple<CString*, CPoint*, int> CTwelveViewModel::DrawImageInfo()
 		for (int side = 0; side < 2; side++)
 		{
 			filePath[job * 2 + side] = L"res/Twelve/" + item[job][side].getSide() + L"/" + item[job][side].getJob();	//파일 경로 설정
-			if (item[job][side].getPlace() == L"Catch") filePath[job * 2 + side] += L"_Taken.png";	//아이템이 속한 장소에 따라 파일명 변경
-			else filePath[job * 2 + side] += L".png";
 
 			imagePoint[job * 2 + side] = item[job][side].getPoint();
+		}
+	}
+
+	for (int job = 0; job < 4; job++)
+	{
+		for (int side = 0; side < 2; side++)
+		{
+			if (item[job][side].getPlace() == L"Catch") filePath[job * 2 + side] += L"_Taken.png";	//아이템이 속한 장소에 따라 파일명 변경
+			else filePath[job * 2 + side] += L".png";
 		}
 	}
 
@@ -78,7 +86,7 @@ std::tuple<CGameTool::CLog*, int> CTwelveViewModel::DrawLogInfo()
 
 	int col = Model.getGridRectSize().x;
 	int row = Model.getGridRectSize().y;
-	int extra = 6;
+	int extra = 8;
 
 	CGameTool::CSpace** spaceBoard = Model.getGridSpace();
 
@@ -101,8 +109,16 @@ std::tuple<CGameTool::CLog*, int> CTwelveViewModel::DrawLogInfo()
 	}
 
 	//임시
+	CPoint origin = Model.getActiveItemIndex();
+	CPoint next = Model.getActiveGridSpaceIndex();
 	log[12].setPoint(CPoint(1180, 0));
-	text.Format(_T("temp : CPoint(%d, %d)"), Model.temp.x, Model.temp.y);
+	if (origin != CPoint(NONE, NONE) && next != CPoint(NONE, NONE))
+	{
+		text.Format(_T("Item : CPoint(%d, %d), GridSpace : CPoint(%d, %d)"), Model.getItem()[origin.x][origin.y].getPoint().x, Model.getItem()[origin.x][origin.y].getPoint().y, Model.getGridSpace()[next.x][next.y].getPoint().x, Model.getGridSpace()[next.x][next.y].getPoint().y);
+	}
+	else {
+		text.Format(_T("뭐"));
+	}
 	log[12].setText(text);
 	log[12].setAlign(3);
 
@@ -143,6 +159,18 @@ std::tuple<CGameTool::CLog*, int> CTwelveViewModel::DrawLogInfo()
 	text.Format(_T("strCurrentStatus : %d"), Model.getCurrentStatus());
 	log[17].setText(text);
 	log[17].setAlign(1);
+
+	//OriginalPoint 확인
+	log[18].setPoint(CPoint(10, 100));
+	text.Format(_T("OriginalPoint : CPoint(%d, %d)"), Model.getOriginalPoint().x, Model.getOriginalPoint().y);
+	log[18].setText(text);
+	log[18].setAlign(1);
+
+	//NextPoint 확인
+	log[19].setPoint(CPoint(10, 120));
+	text.Format(_T("NextPoint : CPoint(%d, %d)"), Model.getNextPoint().x, Model.getNextPoint().y);
+	log[19].setText(text);
+	log[19].setAlign(1);
 
 	return std::make_tuple(log, col * row + extra);
 }

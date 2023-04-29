@@ -27,6 +27,7 @@ BEGIN_MESSAGE_MAP(CBoardGamesView, CView)
 	ON_WM_RBUTTONUP()
 	ON_WM_SIZE()
 	ON_WM_LBUTTONUP()
+	ON_WM_TIMER()
 END_MESSAGE_MAP()
 
 // CBoardGamesView 생성/소멸
@@ -84,6 +85,19 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 	imagePoint = std::get<1>(DrawImageTuple);
 	imageSize = std::get<2>(DrawImageTuple);
 
+	//Draw(pDC, Model.getItem()[3][0].findSprite(L"GKing"), CPoint(300, 300));
+	
+	image.Load(L"res/Twelve/GKing.png");
+	//Model.getItem()[3][0].setImage(image);
+
+	int width = image.GetWidth();		//이미지의 넓이 저장
+	int height = image.GetHeight();		//이미지의 높이 저장
+
+	image.Draw(pDC->m_hDC, 300 - (width / 2), 300 - (height / 2));	//이미지가 입력된 위치의 가운데에 그려지게 조정
+	image.Detach();
+	//Draw(pDC, image2, CPoint(300, 300));
+	
+
 	for (int i = 0; i < imageSize; i++)
 	{
 		DrawFromFile(pDC, filePath[i], imagePoint[i]);
@@ -110,8 +124,14 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 
 		pDC->TextOut(log[i].getPoint().x, log[i].getPoint().y, log[i].getText());
 	}
+	  
+	pDC->TextOut(10, 150, str);
 
-	if (animating) Invalidate();
+	if (animating) {
+		CPoint index = Model.getActiveItemIndex();
+		Draw(pDC, filePath[index.x * 2 + index.y]);
+		Invalidate();
+	}
 }
 
 void CBoardGamesView::OnRButtonUp(UINT /* nFlags */, CPoint point)
@@ -170,7 +190,6 @@ void CBoardGamesView::OnLButtonUp(UINT nFlags, CPoint point)
 	CView::OnLButtonUp(nFlags, point);
 }
 
-
 //중심점과 이미지 파일 경로를 받아 이미지를 그려줌 (CGameTool)
 //(CDC*, CPoint, PCWSTR filePath)
 bool CBoardGamesView::DrawFromFile(CDC* pDC, PCWSTR filePath, CPoint point)
@@ -189,4 +208,58 @@ bool CBoardGamesView::DrawFromFile(CDC* pDC, PCWSTR filePath, CPoint point)
 	image.Detach();
 
 	return TRUE;
+}
+
+void CBoardGamesView::Draw(CDC* pDC, CImage image, CPoint point)
+{
+	int width = image.GetWidth();		//이미지의 넓이 저장
+	int height = image.GetHeight();		//이미지의 높이 저장
+
+	image.Draw(pDC->m_hDC, point.x - (width / 2), point.y - (height / 2));	//이미지가 입력된 위치의 가운데에 그려지게 조정
+	image.Detach();
+}
+
+void CBoardGamesView::Draw(CDC* pDC, CString filename)
+{
+
+	CPoint movingPoint;							//말이 그려질 위치
+	CPoint depart = Model.getOriginalPoint();
+	CPoint arrive = Model.getNextPoint();
+	CPoint move = arrive - depart;
+
+	//이미지 캐싱 해놔라
+	//이미지 캐싱 해놔라
+	//이미지 캐싱 해놔라
+	//이미지 캐싱 해놔라
+	//이미지 캐싱 해놔라
+
+	//이미지 캐싱 해놔라
+	//이미지 캐싱 해놔라
+	//이미지 캐싱 해놔라
+
+	if (imgFrame == 0)										//0프레임
+	{
+		movingPoint.x = depart.x + (move.x * 0.5);		//출발위치와 도착위치의 중간에 위치
+		movingPoint.y = depart.y + (move.y * 0.5);
+		imgFrame++;
+	}
+	else if (imgFrame == 1)									//1프레임
+	{
+		movingPoint.x = depart.x + (move.x * 0.8);		//출발위치와 도착위치의 4/5에 위치
+		movingPoint.y = depart.y + (move.y * 0.8);
+		imgFrame++;
+	}
+	else if (imgFrame < 8)
+	{
+		movingPoint = arrive;							//도착위치에 위치
+		imgFrame++;
+	}
+	else
+	{
+		movingPoint = arrive;							//도착위치에 위치
+		imgFrame = 0;
+	}
+
+	DrawFromFile(pDC, filename, movingPoint);
+	str.Format(_T("%d, %d"), imgFrame, movingPoint.y);
 }

@@ -8,6 +8,8 @@ class CTwelveViewModel
 {
 	CTwelveModel& Model = CTwelveModel::getInstance();
 	CPoint ClickPoint;
+
+	CPoint MoveItemIndex = CPoint(NONE, NONE);
 public:
 	void ReadyGame(CPoint winSize);
 	void ResetGame();
