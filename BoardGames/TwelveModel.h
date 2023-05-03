@@ -1,5 +1,6 @@
 #pragma once
 #include "GridBoardTool.h"
+#include <stack>
 
 #define NONE 15
 
@@ -29,6 +30,9 @@ class CTwelveModel : public CGridBoardTool
 
 	CString Turn = L"Green";	//차례
 	int GameStatus = NORMAL;	//게임 상태
+
+	std::stack<int> GameStatusQueue;
+
 	CPoint ActiveItemIndex = CPoint(NONE, NONE);		//활성화된 아이템 인덱스
 	CPoint ActiveGridSpaceIndex = CPoint(NONE, NONE);	//활성화된 격자공간 인덱스
 	CPoint CatchItemIndex = CPoint(NONE, NONE);			//잡힌 아이템 인덱스
@@ -36,6 +40,7 @@ class CTwelveModel : public CGridBoardTool
 	int AnimationFrame = -1;		//애니메이션 구현시 프레임 구분
 	CPoint OriginalPoint;		//애니메이션 구현 시 아이템 출발 지점
 	CPoint NextPoint;			//애니메이션 구현 시 아이템 도착 지점
+	CPoint AnimatingItemIndex = CPoint(NONE, NONE);	//애니메이션이 적용되고 있는 아이템 인덱스
 public:
 	static CTwelveModel& getInstance() {
 		static CTwelveModel instance;
@@ -53,6 +58,7 @@ public:
 
 	CString getTurn() { return Turn; }
 	int getGameStatus() { return GameStatus; }
+	int getGameStatusQueue() { return GameStatusQueue.top(); }
 	CPoint getActiveItemIndex() { return ActiveItemIndex; }
 	CPoint getActiveGridSpaceIndex() { return ActiveGridSpaceIndex; }
 	CPoint getCatchItemIndex() { return CatchItemIndex; }
@@ -60,6 +66,7 @@ public:
 	int getAnimationFrame() { return AnimationFrame; }
 	CPoint getOriginalPoint() { return OriginalPoint; }
 	CPoint getNextPoint() { return NextPoint; }
+	CPoint getAnimatingItemIndex() { return AnimatingItemIndex; }
 
 	void MakeGridBoard(CPoint winSize);	//격자판 구현
 	void MakeItem();					//아이템 구현

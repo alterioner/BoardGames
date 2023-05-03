@@ -6,6 +6,7 @@ void CTwelveModel::MakeGridBoard(CPoint winSize)
 {
 	GridRect = MakeGridRect(winSize, GridSize, GridRectSize);			//격자칸 구현
 	GridSpace = MakeGridSpace(winSize, GridSize, GridSpaceSize, false);	//격자공간 구현
+	GameStatusQueue.push(NORMAL);
 }
 
 //사용할 아이템 구현
@@ -121,65 +122,181 @@ void CTwelveModel::ResetCatchSpace()
 
 void CTwelveModel::Game(CPoint clickPoint)
 {
-	switch (GameStatus)
+	if (GameStatusQueue.top() == NORMAL)
 	{
-	case NORMAL:
-		if ((ActiveItemIndex = PointToItemIndex(clickPoint)) != CPoint(NONE, NONE))		//아이템 클릭 검사와 동시에 클릭한 아이템 인덱스 저장 및 활성화
+		if (ActiveItemIndex == CPoint(NONE, NONE))
 		{
-			if (1)//Item[ActiveItemIndex.x][ActiveItemIndex.y].getSide() == Turn)	//차례에 맞는 아이템을 활성화했는지 확인
+			if ((ActiveItemIndex = PointToItemIndex(clickPoint)) != CPoint(NONE, NONE))		//아이템 클릭 검사와 동시에 클릭한 아이템 인덱스 저장 및 활성화
 			{
-				if (Item[ActiveItemIndex.x][ActiveItemIndex.y].getStatus() == L"OnCatch") GameStatus = LOCATE;	//캐치공간의 아이템 활성화시 LOCATE 상태로 넘어감
-				else GameStatus = MOVE;
-			}
-		}
-		break;
-	case MOVE:
-		if ((ActiveGridSpaceIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, clickPoint)) != CPoint(NONE, NONE))		//격자공간 클릭 검사와 동시에 클릭한 격자공간 인덱스 저장 및 활성화
-		{
-			if (CheckCanMove(ActiveItemIndex, ActiveGridSpaceIndex))	//활성화된 아이템이 활성화된 격자공간으로 이동 가능한지 검사
-			{
-				int moveNcatch;			//0:이동불가, 1:이동가능 + 상대말 잡음, 2:이동가능
-
-				CPoint activeGridSpacesItemIndex = GridSpace[ActiveGridSpaceIndex.x][ActiveGridSpaceIndex.y].getItemIndex();
-
-				if (activeGridSpacesItemIndex == CPoint(NONE, NONE)) moveNcatch = 2;																						//목적지에 아이템 없음
-				else if (Item[ActiveItemIndex.x][ActiveItemIndex.y].getSide() != Item[activeGridSpacesItemIndex.x][activeGridSpacesItemIndex.y].getSide()) moveNcatch = 1;	//목적지의 아이템이 적군
-				else moveNcatch = 0;																																		//목적지의 아이템이 아군
-
-				switch (moveNcatch)
+				if (1)//GetInstance(Item, ActiveItemIndex).getSide() == Turn)	//차례에 맞는 아이템을 활성화했는지 확인
 				{
-				case 1:
-					CatchItemIndex = activeGridSpacesItemIndex;
-					GameStatus = CATCH;
-				case 2:
-					MoveSpaceInfo(PointToGridSpaceIndex(GridSpace, GridSpaceSize, Item[ActiveItemIndex.x][ActiveItemIndex.y].getPoint()), ActiveGridSpaceIndex);
-					CPoint activeSpacePoint = GridSpace[ActiveGridSpaceIndex.x][ActiveGridSpaceIndex.y].getPoint();
-					MoveItemInfo(ActiveItemIndex, activeSpacePoint);
+					//if (GetInstance(Item, ActiveItemIndex).getStatus() == L"OnCatch") GameStatusQueue.push(LOCATE);
+					//else GameStatusQueue.push(MOVE);
 				}
-				ChangeTurn();
-				MoveAnimation();
-				Animating = true;
 			}
 		}
-
-		if (GameStatus == MOVE) GameStatus = NORMAL;
-		break;
-	case CATCH:
-		CatchItem(CatchItemIndex);
-		CatchAnimation();
-		Animating = true;
-		break;
-	case LOCATE:
-		ActiveGridSpaceIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, clickPoint);
-
-		if (ActiveGridSpaceIndex != CPoint(NONE, NONE))
+		else
 		{
+			bool canDo = false;
+			if ((ActiveGridSpaceIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, clickPoint)) != CPoint(NONE, NONE))
+			{
+				CPoint activeGridSpacesItemIndex = GetInstance(GridSpace, ActiveGridSpaceIndex).getItemIndex();
+
+				if (GetInstance(Item, ActiveItemIndex).getStatus() == L"OnBoard")
+				{
+					if (CheckCanMove(ActiveItemIndex, ActiveGridSpaceIndex))
+					{
+
+						if (activeGridSpacesItemIndex == CPoint(NONE, NONE)) canDo = true;
+						else
+						{
+							if (GetInstance(Item, ActiveItemIndex).getSide() != GetInstance(Item, activeGridSpacesItemIndex).getSide())
+							{
+								CatchItemIndex = GetInstance(GridSpace, ActiveGridSpaceIndex).getItemIndex();
+								GameStatusQueue.push(CATCH);
+								canDo = true;
+							}
+						}
+
+						if (canDo) GameStatusQueue.push(MOVE);
+					}
+				}
+				else if (GetInstance(Item, ActiveItemIndex).getStatus() == L"OnCatch")
+				{
+					if (activeGridSpacesItemIndex == CPoint(NONE, NONE))
+					{
+						int side;
+						if (GetInstance(Item, ActiveItemIndex).getSide() == L"Green") side = GREEN;
+						else side = RED;
+
+						if ((side == GREEN && ActiveGridSpaceIndex.y != 0) || (side == RED && ActiveGridSpaceIndex.y != 3))	//상대 구역에 놓지 못함
+						{
+							GameStatusQueue.push(LOCATE);
+							canDo = true;
+						}
+					}
+				}
+			}
+
+			if (!canDo) ActiveItemIndex = CPoint(NONE, NONE);
+		}
+	}
+	
+	if (GameStatusQueue.top() != NORMAL)
+	{
+		switch (GameStatusQueue.top())
+		{
+			/*
+		case NORMAL:
+			if (ActiveItemIndex == CPoint(NONE, NONE))
+			{
+				if ((ActiveItemIndex = PointToItemIndex(clickPoint)) != CPoint(NONE, NONE))		//아이템 클릭 검사와 동시에 클릭한 아이템 인덱스 저장 및 활성화
+				{
+					if (1)//GetInstance(Item, ActiveItemIndex).getSide() == Turn)	//차례에 맞는 아이템을 활성화했는지 확인
+					{
+						//if (GetInstance(Item, ActiveItemIndex).getStatus() == L"OnCatch") GameStatusQueue.push(LOCATE);
+						//else GameStatusQueue.push(MOVE);
+					}
+				}
+			}
+			else
+			{
+				bool canDo = false;
+				if ((ActiveGridSpaceIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, clickPoint)) != CPoint(NONE, NONE))
+				{
+					if (CheckCanMove(ActiveItemIndex, ActiveGridSpaceIndex))
+					{
+						bool isOnBoard;
+						if (GetInstance(Item, ActiveItemIndex).getStatus() == L"OnBoard") isOnBoard = true;
+						else isOnBoard = false;
+
+						CPoint activeGridSpacesItemIndex = GetInstance(GridSpace, ActiveGridSpaceIndex).getItemIndex();
+
+						if (activeGridSpacesItemIndex == CPoint(NONE, NONE)) canDo = true;
+						else
+						{
+							if (isOnBoard == true && GetInstance(Item, ActiveItemIndex).getSide() != GetInstance(Item, activeGridSpacesItemIndex).getSide()) canDo = true;
+						}
+
+						if (canDo)
+						{
+							if (isOnBoard) GameStatusQueue.push(MOVE);
+							else GameStatusQueue.push(LOCATE);
+						}
+					}
+				}
+
+				if(!canDo) ActiveItemIndex = CPoint(NONE, NONE);
+			}
+			break;
+			*/
+		case MOVE:
+			/*
+			if ((ActiveGridSpaceIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, clickPoint)) != CPoint(NONE, NONE))		//격자공간 클릭 검사와 동시에 클릭한 격자공간 인덱스 저장 및 활성화
+			{
+				if (CheckCanMove(ActiveItemIndex, ActiveGridSpaceIndex))	//활성화된 아이템이 활성화된 격자공간으로 이동 가능한지 검사
+				{
+					int moveNcatch;			//0:이동불가, 1:이동가능 + 상대말 잡음, 2:이동가능
+
+					CPoint activeGridSpacesItemIndex = GetInstance(GridSpace, ActiveGridSpaceIndex).getItemIndex();
+
+					if (activeGridSpacesItemIndex == CPoint(NONE, NONE)) moveNcatch = 2;																//목적지에 아이템 없음
+					else if (GetInstance(Item, ActiveItemIndex).getSide() != GetInstance(Item, activeGridSpacesItemIndex).getSide()) moveNcatch = 1;	//목적지의 아이템이 적군
+					else moveNcatch = 0;																												//목적지의 아이템이 아군
+
+					switch (moveNcatch)
+					{
+					case 1:
+						CatchItemIndex = activeGridSpacesItemIndex;
+						GameStatusQueue.push(CATCH);
+					case 2:
+						MoveSpaceInfo(PointToGridSpaceIndex(GridSpace, GridSpaceSize, GetInstance(Item, ActiveItemIndex).getPoint()), ActiveGridSpaceIndex);
+						CPoint activeSpacePoint = GetInstance(GridSpace, ActiveGridSpaceIndex).getPoint();
+						MoveItemInfo(ActiveItemIndex, activeSpacePoint);
+						ChangeTurn();
+						Animating = true;
+					}
+					ChangeTurn();
+					GameStatusQueue.push(MOVE);
+					Animating = true;
+				}
+			}
+			*/
+				MoveSpaceInfo(PointToGridSpaceIndex(GridSpace, GridSpaceSize, GetInstance(Item, ActiveItemIndex).getPoint()), ActiveGridSpaceIndex);
+				MoveItemInfo(ActiveItemIndex, GetInstance(GridSpace, ActiveGridSpaceIndex).getPoint());
+				ChangeTurn();
+				Animating = true;
+			break;
+		case CATCH:
+			CatchItem(CatchItemIndex);
+			Animating = true;
+			break;
+		case LOCATE:
+			/*
+			ActiveGridSpaceIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, clickPoint);		//클릭한 격자판의 인덱스 저장
+
+			if (ActiveGridSpaceIndex != CPoint(NONE, NONE))											//격자판이 클릭되었는지 확인
+			{
+				if (GetInstance(GridSpace, ActiveGridSpaceIndex).getItemIndex() == CPoint(NONE, NONE))	//격자판이 비어있는지 확인
+				{
+					int side;
+					if (GetInstance(Item, ActiveItemIndex).getSide() == L"Green") side = GREEN;
+					else side = RED;
+
+					if ((side == GREEN && ActiveGridSpaceIndex.y != 0) || (side == RED && ActiveGridSpaceIndex.y != 3))	//상대 구역에 놓지 못함
+					{
+						LocateItem(ActiveItemIndex, ActiveGridSpaceIndex);
+						ChangeTurn();
+						GameStatusQueue.push(MOVE);
+						Animating = true;
+					}
+				}
+			}
+			*/
 			LocateItem(ActiveItemIndex, ActiveGridSpaceIndex);
 			ChangeTurn();
 			Animating = true;
 		}
-		ActiveItemIndex = CPoint(NONE, NONE);
-		GameStatus = NORMAL;
 	}
 }
 
@@ -207,7 +324,12 @@ void CTwelveModel::ChangeTurn()
 //각 말의 이동하려는 방향과 이동할 수 있는 방향이 일치하는지 검사
 bool CTwelveModel::CheckCanMove(CPoint itemIndex, CPoint gridSpaceIndex)
 {
-	CString job = Item[itemIndex.x][itemIndex.y].getJob();
+	CPoint nextItemIndex;
+	if ((nextItemIndex = GetInstance(GridSpace, gridSpaceIndex).getItemIndex()) != CPoint(NONE, NONE))	//이동하려는 자리가 비었는지 확인
+	{
+		if (GetInstance(Item, itemIndex).getSide() == GetInstance(Item, nextItemIndex).getSide()) return false;	//이동하려는 자리의 아이템이 같은 편인지 확인
+	}
+	CString job = GetInstance(Item, itemIndex).getJob();
 	if (job == L"Son") return MoveSon(itemIndex, gridSpaceIndex);
 	else if (job == L"Minister") return MoveDiagonal(itemIndex, gridSpaceIndex);
 	else if (job == L"General") return MoveStraight(itemIndex, gridSpaceIndex);
@@ -221,7 +343,7 @@ bool CTwelveModel::MoveSon(CPoint itemIndex, CPoint gridSpaceIndex)
 {
 	CPoint itemsGridIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, Item[itemIndex.x][itemIndex.y].getPoint());
 
-	if (Item[itemIndex.x][itemIndex.y].getSide() == L"Green") itemsGridIndex.y--;
+	if (GetInstance(Item, itemIndex).getSide() == L"Green") itemsGridIndex.y--;
 	else itemsGridIndex.y++;
 
 	if (itemsGridIndex == gridSpaceIndex) return true;
@@ -230,7 +352,7 @@ bool CTwelveModel::MoveSon(CPoint itemIndex, CPoint gridSpaceIndex)
 
 bool CTwelveModel::MoveDiagonal(CPoint itemIndex, CPoint gridSpaceIndex)
 {
-	CPoint itemsGridIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, Item[itemIndex.x][itemIndex.y].getPoint());
+	CPoint itemsGridIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, GetInstance(Item, itemIndex).getPoint());
 
 	if (itemsGridIndex.x - 1 == gridSpaceIndex.x || itemsGridIndex.x + 1 == gridSpaceIndex.x)
 	{
@@ -245,7 +367,7 @@ bool CTwelveModel::MoveDiagonal(CPoint itemIndex, CPoint gridSpaceIndex)
 
 bool CTwelveModel::MoveStraight(CPoint itemIndex, CPoint gridSpaceIndex)
 {
-	CPoint itemsGridIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, Item[itemIndex.x][itemIndex.y].getPoint());
+	CPoint itemsGridIndex = PointToGridSpaceIndex(GridSpace, GridSpaceSize, GetInstance(Item, itemIndex).getPoint());
 
 	if (itemsGridIndex.x == gridSpaceIndex.x)
 	{
@@ -268,7 +390,7 @@ bool CTwelveModel::MoveStraight(CPoint itemIndex, CPoint gridSpaceIndex)
 //출발지 격자공간 인덱스와 도착지 격자공간 인덱스를 입력받아 각 격자공간의 아이템 인덱스 정보 갱신
 void CTwelveModel::MoveSpaceInfo(CPoint originalIndex, CPoint nextIndex)
 {
-	CPoint itemIndex = GridSpace[originalIndex.x][originalIndex.y].getItemIndex();
+	CPoint itemIndex = GetInstance(GridSpace, originalIndex).getItemIndex();
 	GridSpace[nextIndex.x][nextIndex.y].setItemIndex(itemIndex);
 	GridSpace[originalIndex.x][originalIndex.y].setItemIndex(CPoint(NONE, NONE));
 }
@@ -276,7 +398,8 @@ void CTwelveModel::MoveSpaceInfo(CPoint originalIndex, CPoint nextIndex)
 //이동할 아이템 인덱스와 이동할 포인트를 입력받아 아이템 정보를 갱신
 void CTwelveModel::MoveItemInfo(CPoint itemIndex, CPoint moveTo)
 {
-	OriginalPoint = Item[itemIndex.x][itemIndex.y].getPoint();
+	AnimatingItemIndex = itemIndex;
+	OriginalPoint = GetInstance(Item, itemIndex).getPoint();
 	NextPoint = moveTo;
 	Item[itemIndex.x][itemIndex.y].setPoint(moveTo);
 	Item[itemIndex.x][itemIndex.y].setRect(PointToRect(moveTo, CPoint(90, 90)));
@@ -285,8 +408,9 @@ void CTwelveModel::MoveItemInfo(CPoint itemIndex, CPoint moveTo)
 //잡힌 아이템의 직업에 따라 캐치공간에 정렬
 void CTwelveModel::CatchItem(CPoint itemIndex)
 {
+	AnimatingItemIndex = itemIndex;
 	int side;
-	if (Item[itemIndex.x][itemIndex.y].getSide() == L"Green") {
+	if (GetInstance(Item, itemIndex).getSide() == L"Green") {
 		Item[itemIndex.x][itemIndex.y].setSide(L"Red");
 		side = RED;
 	}
@@ -307,17 +431,16 @@ void CTwelveModel::CatchItem(CPoint itemIndex)
 //잡혀있는 아이템을 격자공간에 배치
 void CTwelveModel::LocateItem(CPoint itemIndex, CPoint gridSpaceIndex)
 {
-	if (GridSpace[gridSpaceIndex.x][gridSpaceIndex.y].getItemIndex() == CPoint(NONE, NONE))
+	AnimatingItemIndex = itemIndex;
+	if (GetInstance(GridSpace, gridSpaceIndex).getItemIndex() == CPoint(NONE, NONE))
 	{
 		int side;
 
-		if (Item[itemIndex.x][itemIndex.y].getSide() == L"Green") side = GREEN;
+		if (GetInstance(Item, itemIndex).getSide() == L"Green") side = GREEN;
 		else side = RED;
 
-		if ((side == GREEN && gridSpaceIndex.y != 0) || (side == RED && gridSpaceIndex.y != 3))	//상대 구역에 놓지 못함
-		{
 			int catchIndex = itemIndex.x * 2;
-			if (Item[itemIndex.x][itemIndex.y].getPoint() == CatchSpace[side][catchIndex].getPoint())	//아래의 잡힌 말을 꺼낼 때
+			if (GetInstance(Item, itemIndex).getPoint() == CatchSpace[side][catchIndex].getPoint())	//아래의 잡힌 말을 꺼낼 때
 			{
 
 				CatchSpace[side][catchIndex].setItemIndex(CPoint(NONE, NONE));
@@ -329,9 +452,8 @@ void CTwelveModel::LocateItem(CPoint itemIndex, CPoint gridSpaceIndex)
 			else CatchSpace[side][catchIndex + 1].setItemIndex(CPoint(NONE, NONE));
 
 			GridSpace[gridSpaceIndex.x][gridSpaceIndex.y].setItemIndex(itemIndex);
-			MoveItemInfo(itemIndex, GridSpace[gridSpaceIndex.x][gridSpaceIndex.y].getPoint());
+			MoveItemInfo(itemIndex, GetInstance(GridSpace, gridSpaceIndex).getPoint());
 			Item[itemIndex.x][itemIndex.y].setStatus(L"OnBoard");
-		}
 	}
 }
 
@@ -349,16 +471,21 @@ void CTwelveModel::ArrangeCatchSpace(int side, int index)
 //애니메이션
 bool CTwelveModel::Animation()
 {
-	if (GameStatus == CATCH)
+	bool temp;
+	if (GameStatusQueue.top() == CATCH)
 	{
-		if (ActiveItemIndex != CPoint(NONE, NONE))
-		{
-			MoveAnimation();
-			return true;
-		}
-		else return CatchAnimation();
+		return CatchAnimation();
 	}
-	else return MoveAnimation();
+	else if (GameStatusQueue.top() == MOVE || GameStatusQueue.top() == LOCATE)
+	{
+		temp = MoveAnimation();
+		if (!temp)
+		{
+			if (GameStatusQueue.top() == CATCH) return true;
+			else return false;
+		}
+		else return true;
+	}
 }
 
 //Move 애니메이션 구현
@@ -405,10 +532,13 @@ bool CTwelveModel::MoveAnimation()
 		Item[ActiveItemIndex.x][ActiveItemIndex.y].setPoint(NextPoint);
 		AnimationFrame = -1;
 		ActiveItemIndex = CPoint(NONE, NONE);
+		ActiveGridSpaceIndex = CPoint(NONE, NONE);
+		AnimatingItemIndex = CPoint(NONE, NONE);
 		Animating = false;
+		GameStatusQueue.pop();
 		return false;
 		break;
-	}
+	}	
 }
 
 //Catch 애니메이션 구현
@@ -480,6 +610,8 @@ bool CTwelveModel::CatchAnimation()
 		CatchItemIndex = CPoint(NONE, NONE);
 		Animating = false;
 		GameStatus = NORMAL;
+		AnimatingItemIndex = CPoint(NONE, NONE);
+		GameStatusQueue.pop();
 		return false;
 		break;
 	}

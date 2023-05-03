@@ -71,6 +71,8 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 	}
 	animating = Twelve.DoGame(clickPoint);
 
+	pDC->Rectangle(CRect(CPoint(-1, -1), CPoint(WinSize.x + 1, WinSize.y + 1)));
+
 	DrawRectTuple = Twelve.DrawRectInfo();
 	CRect* rect = std::get<0>(DrawRectTuple);
 	int rectSize = std::get<1>(DrawRectTuple);
@@ -90,7 +92,7 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 	{
 		DrawFromFile(pDC, filePath[i], imagePoint[i]);
 	}
-	DrawFromFile(pDC, filePath[4], imagePoint[4]);
+	//DrawFromFile(pDC, filePath[4], imagePoint[4]);
 
 	DrawLogTuple = Twelve.DrawLogInfo();
 	CGameTool::CLog* log = std::get<0>(DrawLogTuple);
@@ -117,7 +119,7 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 	if (animating)
 	{
 		Sleep(100);
-		Invalidate();
+		Invalidate(0);
 	}
 }
 
@@ -173,7 +175,7 @@ void CBoardGamesView::OnLButtonUp(UINT nFlags, CPoint point)
 	// TODO: 여기에 메시지 처리기 코드를 추가 및/또는 기본값을 호출합니다.
 	clickPoint = point;
 
-	Invalidate();
+	Invalidate(0);
 	CView::OnLButtonUp(nFlags, point);
 }
 

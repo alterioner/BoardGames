@@ -7,11 +7,3 @@ CRect CGameTool::PointToRect(CPoint point, CPoint size)
 
 	return rect;
 }
-
-CImage CGameTool::SaveImage(PCWSTR filePath)
-{
-	CImage image;
-	image.Load(filePath);
-
-	return image;
-}

@@ -17,6 +17,7 @@ public:
 		void setItemIndex(CPoint itemIndex) { this->itemIndex = itemIndex; }
 	};
 
+
 	class CItem
 	{
 		CPoint point;	//아이템의 중심점
@@ -53,6 +54,8 @@ public:
 		void setAlign(int align) { this->align = align; }
 	};
 
+	template <typename T>
+	T GetInstance(T** item, CPoint index) { return item[index.x][index.y]; }
+
 	CRect PointToRect(CPoint point, CPoint size);
-	CImage SaveImage(PCWSTR filePath);
 };

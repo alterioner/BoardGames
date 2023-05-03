@@ -22,7 +22,8 @@ bool CTwelveViewModel::DoGame(CPoint clickPoint)
 	if (!Model.getAnimating())
 	{
 		Model.Game(clickPoint);
-		return Model.getAnimating();
+		if (Model.getAnimating()) return Model.Animation();
+		else return Model.getAnimating();
 	}
 	else
 	{
@@ -57,6 +58,12 @@ std::tuple<CString*, CPoint*, int> CTwelveViewModel::DrawImageInfo()
 	CString* filePath = new CString[8];
 	CPoint* imagePoint = new CPoint[8];
 
+	CPoint lastItemIndex = Model.getAnimatingItemIndex();
+	int lastImageIndex;
+
+	if (lastItemIndex != CPoint(NONE, NONE)) lastImageIndex = lastItemIndex.x * 2 + lastItemIndex.y;
+	else lastImageIndex = NONE;
+
 	for (int job = 0; job < 4; job++)
 	{
 		for (int side = 0; side < 2; side++)
@@ -64,6 +71,20 @@ std::tuple<CString*, CPoint*, int> CTwelveViewModel::DrawImageInfo()
 			filePath[job * 2 + side] = L"res/Twelve/" + item[job][side].getSide() + item[job][side].getJob() + item[job][side].getStatus() + L".png";	//파일 경로 설정
 
 			imagePoint[job * 2 + side] = item[job][side].getPoint();
+		}
+	}
+
+	if (lastImageIndex != NONE)
+	{
+		for (int i = lastImageIndex; i < 7; i++)
+		{
+			CString tempString = filePath[i];
+			filePath[i] = filePath[i + 1];
+			filePath[i + 1] = tempString;
+
+			CPoint tempPoint = imagePoint[i];
+			imagePoint[i] = imagePoint[i + 1];
+			imagePoint[i + 1] = tempPoint;
 		}
 	}
 
@@ -132,7 +153,7 @@ std::tuple<CGameTool::CLog*, int> CTwelveViewModel::DrawLogInfo()
 
 	//GameStatus 확인
 	log[15].setPoint(CPoint(10, 40));
-	text.Format(_T("GameStatus : %d"), Model.getGameStatus());
+	text.Format(_T("GameStatusQueue : %d"), Model.getGameStatusQueue());
 	log[15].setText(text);
 	log[15].setAlign(1);
 
