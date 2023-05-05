@@ -30,18 +30,20 @@ class CTwelveModel : public CGridBoardTool
 	CSpace** CatchSpace;					//캐치공간 정보
 
 	CString Turn = L"Green";	//차례
-	int GameStatus = NORMAL;	//게임 상태
-
-	std::stack<int> GameStatusQueue;
+	std::stack<int> GameStatusStack;
 
 	CPoint ActiveItemIndex = CPoint(NONE, NONE);		//활성화된 아이템 인덱스
 	CPoint ActiveGridSpaceIndex = CPoint(NONE, NONE);	//활성화된 격자공간 인덱스
 	CPoint CatchItemIndex = CPoint(NONE, NONE);			//잡힌 아이템 인덱스
+
+	CPoint AnimatingItemIndex = CPoint(NONE, NONE);	//애니메이션이 적용되고 있는 아이템 인덱스
 	bool Animating = false;			//애니메이션 토글
 	int AnimationFrame = -1;		//애니메이션 구현시 프레임 구분
 	CPoint OriginalPoint;		//애니메이션 구현 시 아이템 출발 지점
 	CPoint NextPoint;			//애니메이션 구현 시 아이템 도착 지점
-	CPoint AnimatingItemIndex = CPoint(NONE, NONE);	//애니메이션이 적용되고 있는 아이템 인덱스
+
+	int Winer;	//이긴 편
+	int KingInvasion;	//킹이 이길 상황
 public:
 	static CTwelveModel& getInstance() {
 		static CTwelveModel instance;
@@ -58,16 +60,19 @@ public:
 	CItem** getItem() { return Item; }
 
 	CString getTurn() { return Turn; }
-	int getGameStatus() { return GameStatus; }
-	int getGameStatusQueue() { return GameStatusQueue.top(); }
+	int getGameStatusQueue() { return GameStatusStack.top(); }
+
 	CPoint getActiveItemIndex() { return ActiveItemIndex; }
 	CPoint getActiveGridSpaceIndex() { return ActiveGridSpaceIndex; }
 	CPoint getCatchItemIndex() { return CatchItemIndex; }
+
+	CPoint getAnimatingItemIndex() { return AnimatingItemIndex; }
 	bool getAnimating() { return Animating; }
 	int getAnimationFrame() { return AnimationFrame; }
 	CPoint getOriginalPoint() { return OriginalPoint; }
 	CPoint getNextPoint() { return NextPoint; }
-	CPoint getAnimatingItemIndex() { return AnimatingItemIndex; }
+
+	int getKingInvasion() { return KingInvasion; }
 
 	void MakeGridBoard(CPoint winSize);	//격자판 구현
 	void MakeItem();					//아이템 구현
@@ -100,5 +105,6 @@ public:
 	bool Animation();
 	void MoveAnimation();
 	bool CatchAnimation();
+	void ReverseAnimation();
 };
 

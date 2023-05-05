@@ -6,7 +6,9 @@ void CTwelveModel::MakeGridBoard(CPoint winSize)
 {
 	GridRect = MakeGridRect(winSize, GridSize, GridRectSize);			//격자칸 구현
 	GridSpace = MakeGridSpace(winSize, GridSize, GridSpaceSize, false);	//격자공간 구현
-	GameStatusQueue.push(NORMAL);
+	GameStatusStack.push(NORMAL);
+	Winer = NONE;
+	KingInvasion = NONE;
 }
 
 //사용할 아이템 구현
@@ -122,7 +124,7 @@ void CTwelveModel::ResetCatchSpace()
 
 void CTwelveModel::Game(CPoint clickPoint)
 {
-	if (GameStatusQueue.top() == NORMAL)
+	if (GameStatusStack.top() == NORMAL)
 	{
 		if (ActiveItemIndex == CPoint(NONE, NONE))
 		{
@@ -162,7 +164,7 @@ void CTwelveModel::Game(CPoint clickPoint)
 				{
 					if ((Turn == L"Green" && ActiveGridSpaceIndex.y != 0) || (Turn == L"Red" && ActiveGridSpaceIndex.y != 3))
 					{
-						GameStatusQueue.push(LOCATE);
+						GameStatusStack.push(LOCATE);
 						canLocate = true;
 					}
 				}
@@ -179,13 +181,13 @@ void CTwelveModel::Game(CPoint clickPoint)
 				{
 					if ((Turn == L"Green" && ActiveGridSpaceIndex.y == 0) || (Turn == L"Red" && ActiveGridSpaceIndex.y == 3))
 					{
-						if (GetInstance(Item, ActiveItemIndex).getJob() == L"Son") GameStatusQueue.push(REVERSE);
+						if (GetInstance(Item, ActiveItemIndex).getJob() == L"Son") GameStatusStack.push(REVERSE);
 					}
 
 					CatchItemIndex = GetInstance(GridSpace, ActiveGridSpaceIndex).getItemIndex();
 					
-					if (CatchItemIndex != CPoint(NONE, NONE)) GameStatusQueue.push(CATCH);
-					GameStatusQueue.push(MOVE);
+					if (CatchItemIndex != CPoint(NONE, NONE)) GameStatusStack.push(CATCH);
+					GameStatusStack.push(MOVE);
 				}
 				else
 				{
@@ -197,19 +199,17 @@ void CTwelveModel::Game(CPoint clickPoint)
 		}
 	}
 	
-	if (GameStatusQueue.top() != NORMAL)
+	if (GameStatusStack.top() != NORMAL)
 	{
-		switch (GameStatusQueue.top())
+		switch (GameStatusStack.top())
 		{
 		case LOCATE:
 			LocateItem(ActiveItemIndex, ActiveGridSpaceIndex);
-			ChangeTurn();
 			Animating = true;
 			break;
 		case MOVE:
 			MoveSpaceInfo(PointToGridSpaceIndex(GridSpace, GridSpaceSize, GetInstance(Item, ActiveItemIndex).getPoint()), ActiveGridSpaceIndex);
 			MoveItemInfo(ActiveItemIndex, GetInstance(GridSpace, ActiveGridSpaceIndex).getPoint());
-			ChangeTurn();
 			Animating = true;
 			break;
 		case CATCH:
@@ -357,6 +357,8 @@ void CTwelveModel::CatchItem(CPoint itemIndex)
 		side = GREEN;
 	}
 
+	if (GetInstance(Item, itemIndex).getJob() == L"Lord") Item[itemIndex.x][itemIndex.y].setJob(L"Son");
+
 	int index;
 	if (CatchSpace[side][itemIndex.x * 2].getItemIndex() == CPoint(NONE, NONE)) index = itemIndex.x * 2;	//빈 캐치공간 파악
 	else index = (itemIndex.x * 2) + 1;
@@ -408,7 +410,7 @@ void CTwelveModel::ArrangeCatchSpace(int side, int index)
 //애니메이션
 bool CTwelveModel::Animation()
 {
-	switch (GameStatusQueue.top())
+	switch (GameStatusStack.top())
 	{
 	case MOVE:
 	case LOCATE:
@@ -418,19 +420,19 @@ bool CTwelveModel::Animation()
 		CatchAnimation();
 		break;
 	case REVERSE:
-		AnimationFrame = -1;
-		GameStatusQueue.pop();
-		Animating = false;
+		ReverseAnimation();
+		AnimatingItemIndex = ActiveItemIndex;
 		break;
 	}
 
-	if (GameStatusQueue.top() != NORMAL) return true;
+	if (GameStatusStack.top() != NORMAL) return true;
 	else
 	{
 		ActiveItemIndex = CPoint(NONE, NONE);
 		ActiveGridSpaceIndex = CPoint(NONE, NONE);
 		CatchItemIndex = CPoint(NONE, NONE);
 		AnimatingItemIndex = CPoint(NONE, NONE);
+		ChangeTurn();
 		return false;
 	}
 }
@@ -475,7 +477,7 @@ void CTwelveModel::MoveAnimation()
 		Item[ActiveItemIndex.x][ActiveItemIndex.y].setStatus(L"OnBoard");
 		Item[ActiveItemIndex.x][ActiveItemIndex.y].setPoint(NextPoint);
 		AnimationFrame = -1;
-		GameStatusQueue.pop();
+		GameStatusStack.pop();
 		Animating = false;
 		break;
 	}	
@@ -547,9 +549,25 @@ bool CTwelveModel::CatchAnimation()
 		Item[CatchItemIndex.x][CatchItemIndex.y].setStatus(L"OnCatch");
 		Item[CatchItemIndex.x][CatchItemIndex.y].setPoint(NextPoint);
 		AnimationFrame = -1;
-		GameStatusQueue.pop();
+		GameStatusStack.pop();
 		Animating = false;
 		return false;
 		break;
+	}
+}
+
+void CTwelveModel::ReverseAnimation()
+{
+	CString str;
+	AnimationFrame++;
+	str.Format(_T("Reverse%d"), AnimationFrame);
+
+	if (AnimationFrame < 16) Item[ActiveItemIndex.x][ActiveItemIndex.y].setStatus(str);
+	else
+	{
+		Item[ActiveItemIndex.x][ActiveItemIndex.y].setStatus(L"OnBoard");
+		AnimationFrame = -1;
+		GameStatusStack.pop();
+		Animating = false;
 	}
 }

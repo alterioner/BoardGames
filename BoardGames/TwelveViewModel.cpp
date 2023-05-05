@@ -98,7 +98,7 @@ std::tuple<CGameTool::CLog*, int> CTwelveViewModel::DrawLogInfo()
 
 	int col = Model.getGridRectSize().x;
 	int row = Model.getGridRectSize().y;
-	int extra = 11;
+	int extra = 12;
 
 	CGameTool::CSpace** spaceBoard = Model.getGridSpace();
 
@@ -207,8 +207,13 @@ std::tuple<CGameTool::CLog*, int> CTwelveViewModel::DrawLogInfo()
 
 	//Turn 확인
 	log[22].setPoint(CPoint(10, 180));
-	log[22].setText(Model.getTurn());
+	log[22].setText(L"Turn : " + Model.getTurn());
 	log[22].setAlign(1);
+
+	//Turn 확인
+	log[23].setPoint(CPoint(10, 200));
+	log[23].setText(L"Turn : ");// + Model.getTurn());
+	log[23].setAlign(1);
 
 	return std::make_tuple(log, col * row + extra);
 }
