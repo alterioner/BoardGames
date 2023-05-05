@@ -12,6 +12,7 @@ public:
 	void ReadyGame(CPoint winSize);
 	void ResetGame();
 	bool DoGame(CPoint clickPoint);
+	CString CheckWinner();
 
 	std::list<CRect> DrawRectInfo();
 	std::list<CGameTool::CImage> DrawImageInfo();

@@ -62,14 +62,17 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 	if (start)
 	{
 		Twelve.ReadyGame(WinSize);
+		Twelve.ResetGame();
 		start = false;
 	}
-	if (reset)
+
+	animating = Twelve.DoGame(clickPoint);
+
+	Winner = Twelve.CheckWinner();
+	if (Winner != L"None")
 	{
 		Twelve.ResetGame();
-		reset = false;
 	}
-	animating = Twelve.DoGame(clickPoint);
 
 	pDC->Rectangle(CRect(CPoint(-1, -1), CPoint(WinSize.x + 1, WinSize.y + 1)));
 

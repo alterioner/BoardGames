@@ -42,8 +42,9 @@ class CTwelveModel : public CGridBoardTool
 	CPoint OriginalPoint;		//애니메이션 구현 시 아이템 출발 지점
 	CPoint NextPoint;			//애니메이션 구현 시 아이템 도착 지점
 
-	int Winer;	//이긴 편
-	int KingInvasion;	//킹이 이길 상황
+	bool GameEnd = false;
+	CString Winner;	//이긴 편
+	CString KingInvasion;	//킹이 침략한 상황
 public:
 	//Model 모노톤 패턴으로 선언
 	static CTwelveModel& getInstance() {
@@ -73,7 +74,9 @@ public:
 	CPoint getOriginalPoint() { return OriginalPoint; }
 	CPoint getNextPoint() { return NextPoint; }
 
-	int getKingInvasion() { return KingInvasion; }
+	bool getGameEnd() { return GameEnd; }
+	CString getWinner() { return Winner; }
+	CString getKingInvasion() { return KingInvasion; }
 
 	void MakeGridBoard(CPoint winSize);	//격자판 구현
 	void MakeItem();					//아이템 구현

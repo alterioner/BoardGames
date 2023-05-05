@@ -31,6 +31,12 @@ bool CTwelveViewModel::DoGame(CPoint clickPoint)
 	}
 }
 
+CString CTwelveViewModel::CheckWinner()
+{
+	if (Model.getGameEnd()) return Model.getWinner();
+	else return L"None";
+}
+
 std::list<CRect> CTwelveViewModel::DrawRectInfo()
 {
 	std::list<CRect> rectList;

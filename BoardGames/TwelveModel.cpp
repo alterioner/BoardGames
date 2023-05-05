@@ -16,13 +16,10 @@ void CTwelveModel::MakeItem()
 	for (int i = 0; i < 4; i++)
 	{
 		Item[i] = new CItem[2];
-		Item[i][GREEN].setSide(L"Green");
-		Item[i][RED].setSide(L"Red");
 	}
 
 	for (int i = 0; i < 2; i++)
 	{
-		Item[SON][i].setJob(L"Son");
 		Item[MINISTER][i].setJob(L"Minister");
 		Item[GENERAL][i].setJob(L"General");
 		Item[KING][i].setJob(L"King");
@@ -83,9 +80,20 @@ void CTwelveModel::ResetGridBoard()
 	GridSpace[1][0].setItemIndex(CPoint(KING, RED));		//적색 王배치
 }
 
-//아이템 정보 초기화
+//아이템 정보 초기화ㅜ
 void CTwelveModel::ResetItem()
 {
+	//Lord가 되어있을지 모를 Son 초기화
+	Item[SON][0].setJob(L"Son");
+	Item[SON][1].setJob(L"Son");
+
+	//편 초기화
+	for (int i = 0; i < 4; i++)
+	{
+		Item[i][GREEN].setSide(L"Green");
+		Item[i][RED].setSide(L"Red");
+	}
+
 	//아이템 위치 초기화
 	Item[SON][GREEN].setPoint(GridSpace[1][2].getPoint());
 	Item[MINISTER][GREEN].setPoint(GridSpace[0][3].getPoint());
@@ -126,8 +134,9 @@ void CTwelveModel::ResetStatus()
 	while (!GameStatusStack.empty()) GameStatusStack.pop();
 	GameStatusStack.push(NORMAL);
 	//승리 확인 조건 초기화
-	Winer = NONE;
-	KingInvasion = NONE;
+	GameEnd = false;
+	Winner = L"None";
+	KingInvasion = L"None";
 	//기타 정보 초기화
 	Turn = L"Green";
 	Animating = false;
@@ -142,6 +151,12 @@ void CTwelveModel::ResetStatus()
 
 void CTwelveModel::Game(CPoint clickPoint)
 {
+	if (Winner != L"None")
+	{
+		GameEnd = true;
+		return;
+	}
+
 	if (GameStatusStack.top() == NORMAL)	//게임 상태가 NORMAL
 	{
 		if (ActiveItemIndex == CPoint(NONE, NONE))	//활성화된 아이템 없음
@@ -186,11 +201,17 @@ void CTwelveModel::Game(CPoint clickPoint)
 					{
 						//아이템이 Son일 경우
 						if (GetInstance(Item, ActiveItemIndex).getJob() == L"Son") GameStatusStack.push(REVERSE);
+						else if (GetInstance(Item, ActiveItemIndex).getJob() == L"King" && KingInvasion == L"None") KingInvasion = Turn;
 					}
 
 					CatchItemIndex = GetInstance(GridSpace, ActiveGridSpaceIndex).getItemIndex();
 					//잡힐 말이 있을 시
-					if (CatchItemIndex != CPoint(NONE, NONE)) GameStatusStack.push(CATCH);
+					if (CatchItemIndex != CPoint(NONE, NONE))
+					{
+						if (CatchItemIndex.x == KING) Winner = Turn;
+						else GameStatusStack.push(CATCH);
+					}
+
 					GameStatusStack.push(MOVE);
 				}
 				else
@@ -262,9 +283,7 @@ bool CTwelveModel::CheckCanLocate(CPoint gridSpaceIndex)
 	if (GetInstance(GridSpace, gridSpaceIndex).getItemIndex() == CPoint(NONE, NONE))
 	{
 		if ((Turn == L"Green" && gridSpaceIndex.y != 0) || (Turn == L"Red" && gridSpaceIndex.y != 3))
-		{
 			return true;
-		}
 	}
 	return false;
 }
@@ -446,6 +465,7 @@ bool CTwelveModel::Animation()
 		OriginalPoint = CPoint(NONE, NONE);
 		NextPoint = CPoint(NONE, NONE);
 		ChangeTurn();
+		if (KingInvasion == Turn) Winner = KingInvasion;
 		return false;
 	}
 }
