@@ -23,7 +23,7 @@ bool CTwelveViewModel::DoGame(CPoint clickPoint)
 	{
 		Model.Game(clickPoint);
 		if (Model.getAnimating()) return Model.Animation();
-		else return Model.getAnimating();
+		else return false;
 	}
 	else
 	{
@@ -98,7 +98,7 @@ std::tuple<CGameTool::CLog*, int> CTwelveViewModel::DrawLogInfo()
 
 	int col = Model.getGridRectSize().x;
 	int row = Model.getGridRectSize().y;
-	int extra = 10;
+	int extra = 11;
 
 	CGameTool::CSpace** spaceBoard = Model.getGridSpace();
 
@@ -204,6 +204,11 @@ std::tuple<CGameTool::CLog*, int> CTwelveViewModel::DrawLogInfo()
 	text.Format(_T("NextPoint : CPoint(%d, %d)"), Model.getNextPoint().x, Model.getNextPoint().y);
 	log[21].setText(text);
 	log[21].setAlign(1);
+
+	//Turn »Æ¿Œ
+	log[22].setPoint(CPoint(10, 180));
+	log[22].setText(Model.getTurn());
+	log[22].setAlign(1);
 
 	return std::make_tuple(log, col * row + extra);
 }

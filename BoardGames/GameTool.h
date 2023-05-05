@@ -55,7 +55,7 @@ public:
 	};
 
 	template <typename T>
-	T GetInstance(T** item, CPoint index) { return item[index.x][index.y]; }
+	T GetInstance(T** Data, CPoint index) { return Data[index.x][index.y]; }
 
 	CRect PointToRect(CPoint point, CPoint size);
 };

@@ -14,8 +14,9 @@
 
 #define NORMAL 0
 #define MOVE 1
-#define CATCH 2
-#define LOCATE 3
+#define CATCH 3
+#define REVERSE 4
+#define LOCATE 5
 
 class CTwelveModel : public CGridBoardTool
 {
@@ -88,6 +89,7 @@ public:
 	bool MoveSon(CPoint itemIndex, CPoint gridSpaceIndex);
 	bool MoveDiagonal(CPoint itemIndex, CPoint gridSpaceIndex);
 	bool MoveStraight(CPoint itemIndex, CPoint gridSpaceIndex);
+	bool MoveLord(CPoint itemIndex, CPoint gridSpaceIndex);
 
 	void MoveItemInfo(CPoint itemIndex, CPoint moveTo);			//아이템 정보 이동
 	void MoveSpaceInfo(CPoint originalIndex, CPoint nextIndex);	//격자공간의 아이템 인덱스 정보 이동
@@ -96,7 +98,7 @@ public:
 	void ArrangeCatchSpace(int side, int index);				//캐치공간 정렬
 
 	bool Animation();
-	bool MoveAnimation();
+	void MoveAnimation();
 	bool CatchAnimation();
 };
 
