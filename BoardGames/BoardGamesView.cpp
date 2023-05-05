@@ -73,34 +73,16 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 
 	pDC->Rectangle(CRect(CPoint(-1, -1), CPoint(WinSize.x + 1, WinSize.y + 1)));
 
-	DrawRectTuple = Twelve.DrawRectInfo();
-	CRect* rect = std::get<0>(DrawRectTuple);
-	int rectSize = std::get<1>(DrawRectTuple);
+	DrawRectList = Twelve.DrawRectInfo();
+	for (auto& rect : DrawRectList) pDC->Rectangle(rect);
 
-	for (int i = 0; i < rectSize; i++)
+	DrawImageList = Twelve.DrawImageInfo();
+	for (auto& image : DrawImageList) DrawFromFile(pDC, image.getFilePath(), image.getPoint());
+
+	DrawLogList = Twelve.DrawLogInfo();
+	for (auto& log : DrawLogList)
 	{
-		pDC->Rectangle(rect[i]);
-	}
-
-	DrawImageTuple = Twelve.DrawImageInfo();
-	filePath = std::get<0>(DrawImageTuple);
-	imagePoint = std::get<1>(DrawImageTuple);
-	imageSize = std::get<2>(DrawImageTuple);
-	
-
-	for (int i = 0; i < imageSize; i++)
-	{
-		DrawFromFile(pDC, filePath[i], imagePoint[i]);
-	}
-	//DrawFromFile(pDC, filePath[4], imagePoint[4]);
-
-	DrawLogTuple = Twelve.DrawLogInfo();
-	CGameTool::CLog* log = std::get<0>(DrawLogTuple);
-	int logSize = std::get<1>(DrawLogTuple);
-
-	for (int i = 0; i < logSize; i++)
-	{
-		switch(log[i].getAlign())
+		switch (log.getAlign())
 		{
 		case 1:
 			pDC->SetTextAlign(TA_LEFT);
@@ -113,7 +95,7 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 			break;
 		}
 
-		pDC->TextOut(log[i].getPoint().x, log[i].getPoint().y, log[i].getText());
+		pDC->TextOut(log.getPoint().x, log.getPoint().y, log.getText());
 	}
 
 	if (animating)
@@ -198,40 +180,3 @@ bool CBoardGamesView::DrawFromFile(CDC* pDC, PCWSTR filePath, CPoint point)
 
 	return TRUE;
 }
-
-/*
-void CBoardGamesView::Draw(CDC* pDC, CString filename)
-{
-
-	CPoint movingPoint;							//말이 그려질 위치
-	CPoint depart = Model.getOriginalPoint();
-	CPoint arrive = Model.getNextPoint();
-	CPoint move = arrive - depart;
-
-	if (imgFrame == 0)										//0프레임
-	{
-		movingPoint.x = depart.x + (move.x * 0.5);		//출발위치와 도착위치의 중간에 위치
-		movingPoint.y = depart.y + (move.y * 0.5);
-		imgFrame++;
-	}
-	else if (imgFrame == 1)									//1프레임
-	{
-		movingPoint.x = depart.x + (move.x * 0.8);		//출발위치와 도착위치의 4/5에 위치
-		movingPoint.y = depart.y + (move.y * 0.8);
-		imgFrame++;
-	}
-	else if (imgFrame < 8)
-	{
-		movingPoint = arrive;							//도착위치에 위치
-		imgFrame++;
-	}
-	else
-	{
-		movingPoint = arrive;							//도착위치에 위치
-		imgFrame = 0;
-	}
-
-	DrawFromFile(pDC, filename, movingPoint);
-	str.Format(_T("%d, %d"), imgFrame, movingPoint.y);
-}
-*/

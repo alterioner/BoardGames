@@ -3,7 +3,7 @@
 //
 
 #pragma once
-#include <tuple>
+#include <list>
 #include "TwelveViewModel.h"
 
 class CBoardGamesView : public CView
@@ -53,20 +53,10 @@ public:
 	bool reset = true;
 	bool animating = false;
 	CTwelveViewModel Twelve;
-	CTwelveModel& Model = CTwelveModel::getInstance();
 
-	std::tuple<CRect*, int> DrawRectTuple;
-	CRect* rect;
-	int rectSize;
-
-	std::tuple<CString*, CPoint*, int> DrawImageTuple;
-	CString* filePath;
-	CPoint* imagePoint;
-	int imageSize;
-
-	std::tuple<CGameTool::CLog*, int> DrawLogTuple;
-	CGameTool::CLog* log;
-	int logSize;
+	std::list<CRect> DrawRectList;
+	std::list<CGameTool::CImage> DrawImageList;
+	std::list<CGameTool::CLog> DrawLogList;
 	
 	int imgFrame;
 

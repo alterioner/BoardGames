@@ -14,9 +14,9 @@
 
 #define NORMAL 0
 #define MOVE 1
-#define CATCH 3
-#define REVERSE 4
-#define LOCATE 5
+#define CATCH 2
+#define REVERSE 3
+#define LOCATE 4
 
 class CTwelveModel : public CGridBoardTool
 {
@@ -29,22 +29,23 @@ class CTwelveModel : public CGridBoardTool
 	CItem** Item;							//아이템 정보
 	CSpace** CatchSpace;					//캐치공간 정보
 
-	CString Turn = L"Green";	//차례
-	std::stack<int> GameStatusStack;
+	CString Turn = L"Green";			//차례
+	std::stack<int> GameStatusStack;	//게임 상태
 
 	CPoint ActiveItemIndex = CPoint(NONE, NONE);		//활성화된 아이템 인덱스
 	CPoint ActiveGridSpaceIndex = CPoint(NONE, NONE);	//활성화된 격자공간 인덱스
 	CPoint CatchItemIndex = CPoint(NONE, NONE);			//잡힌 아이템 인덱스
 
 	CPoint AnimatingItemIndex = CPoint(NONE, NONE);	//애니메이션이 적용되고 있는 아이템 인덱스
-	bool Animating = false;			//애니메이션 토글
-	int AnimationFrame = -1;		//애니메이션 구현시 프레임 구분
+	bool Animating = false;		//애니메이션 토글
+	int AnimationFrame = -1;	//애니메이션 구현시 프레임 구분
 	CPoint OriginalPoint;		//애니메이션 구현 시 아이템 출발 지점
 	CPoint NextPoint;			//애니메이션 구현 시 아이템 도착 지점
 
 	int Winer;	//이긴 편
 	int KingInvasion;	//킹이 이길 상황
 public:
+	//Model 모노톤 패턴으로 선언
 	static CTwelveModel& getInstance() {
 		static CTwelveModel instance;
 		return instance;
@@ -81,20 +82,20 @@ public:
 	void ResetGridBoard();	//격자판 정보 초기화
 	void ResetItem();		//아이템 정보 초기화
 	void ResetCatchSpace();	//캐치공간 정보 초기화
-
-	CPoint temp;
+	void ResetStatus();		//기타 정보 초기화
 
 	void Game(CPoint clickPoint);
 
 	CPoint PointToItemIndex(CPoint clickPoint);		//좌표를 아이템 인덱스로 변환
 
-	void ChangeTurn();
+	void ChangeTurn();	//차례 변경
 
-	bool CheckCanMove(CPoint itemIndex, CPoint gridSpaceIndex);	//역할상 이동 가능 여부 확인
-	bool MoveSon(CPoint itemIndex, CPoint gridSpaceIndex);
-	bool MoveDiagonal(CPoint itemIndex, CPoint gridSpaceIndex);
-	bool MoveStraight(CPoint itemIndex, CPoint gridSpaceIndex);
-	bool MoveLord(CPoint itemIndex, CPoint gridSpaceIndex);
+	bool CheckCanLocate(CPoint gridSpaceIndex);						//배치 가능 여부 확인
+	bool CheckCanMove(CPoint itemIndex, CPoint gridSpaceIndex);		//이동 가능 여부 확인
+	bool MoveDiagonal(CPoint originalIndex, CPoint nextIndex);
+	bool MoveStraight(CPoint originalIndex, CPoint nextIndex);
+	bool MoveSon(CPoint itemIndex, CPoint originalIndex, CPoint nextIndex);
+	bool MoveLord(CPoint itemIndex, CPoint originalIndex, CPoint nextIndex);
 
 	void MoveItemInfo(CPoint itemIndex, CPoint moveTo);			//아이템 정보 이동
 	void MoveSpaceInfo(CPoint originalIndex, CPoint nextIndex);	//격자공간의 아이템 인덱스 정보 이동
@@ -102,9 +103,9 @@ public:
 	void LocateItem(CPoint itemIndex, CPoint gridIndex);		//잡힌 아이템 재배치
 	void ArrangeCatchSpace(int side, int index);				//캐치공간 정렬
 
-	bool Animation();
+	bool Animation();		//애니메이션 구현
 	void MoveAnimation();
-	bool CatchAnimation();
+	void CatchAnimation();
 	void ReverseAnimation();
 };
 

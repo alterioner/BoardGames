@@ -40,22 +40,39 @@ public:
 		void setStatus(CString status) { this->status = status; }
 	};
 
-	class CLog
+	class CImage
 	{
-		CPoint point;	//로그가 위치할 좌표
-		CString text;	//텍스트
-		int align;		//TA 1:LEFT, 2:CENTER, 3:RIGHT
+		CString filePath;
+		CPoint point;
 	public:
+		CImage() {};
+		CImage(CString filePath, CPoint point) : filePath(filePath), point(point) {}
+
+		CString getFilePath() { return filePath; }
+		void setFilePath(CString filePath) { this->filePath = filePath; }
 		CPoint getPoint() { return point; }
 		void setPoint(CPoint point) { this->point = point; }
+	};
+
+	class CLog
+	{
+		CString text;	//텍스트
+		CPoint point;	//로그가 위치할 좌표
+		int align;		//TA 1:LEFT, 2:CENTER, 3:RIGHT
+	public:
+		CLog() {};
+		CLog(CString text, CPoint point, int align) : text(text), point(point), align(align) {}
+
 		CString getText() { return text; }
 		void setText(CString text) { this->text = text; }
+		CPoint getPoint() { return point; }
+		void setPoint(CPoint point) { this->point = point; }
 		int getAlign() { return align; }
 		void setAlign(int align) { this->align = align; }
 	};
 
 	template <typename T>
-	T GetInstance(T** Data, CPoint index) { return Data[index.x][index.y]; }
+	T GetInstance(T** data, CPoint index) { return data[index.x][index.y]; }
 
 	CRect PointToRect(CPoint point, CPoint size);
 };
