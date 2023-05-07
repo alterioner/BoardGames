@@ -66,13 +66,13 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 		start = false;
 	}
 
-	animating = Twelve.DoGame(clickPoint);
-
-	Winner = Twelve.CheckWinner();
-	if (Winner != L"None")
+	if (reset)
 	{
 		Twelve.ResetGame();
+		reset = false;
 	}
+
+	animating = Twelve.DoGame(clickPoint);
 
 	pDC->Rectangle(CRect(CPoint(-1, -1), CPoint(WinSize.x + 1, WinSize.y + 1)));
 
@@ -99,6 +99,14 @@ void CBoardGamesView::OnDraw(CDC* pDC)
 		}
 
 		pDC->TextOut(log.getPoint().x, log.getPoint().y, log.getText());
+	}
+
+	Winner = Twelve.CheckWinner();
+	if (Winner != L"None")
+	{
+		reset = true;
+		MessageBox(Winner, NULL, MB_OK);
+		Invalidate(0);
 	}
 
 	if (animating)

@@ -209,7 +209,7 @@ void CTwelveModel::Game(CPoint clickPoint)
 					if (CatchItemIndex != CPoint(NONE, NONE))
 					{
 						if (CatchItemIndex.x == KING) Winner = Turn;
-						else GameStatusStack.push(CATCH);
+						GameStatusStack.push(CATCH);
 					}
 
 					GameStatusStack.push(MOVE);

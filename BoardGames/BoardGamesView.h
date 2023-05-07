@@ -50,6 +50,7 @@ public:
 	CPoint clickPoint;	//클릭한 위치
 
 	bool start = true;
+	bool reset = true;
 	bool animating = false;
 	CString Winner = L"";
 	CTwelveViewModel Twelve;
